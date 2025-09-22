@@ -9,6 +9,7 @@
 - New setting that lets you texture swap healers specifically, optionally only when class stacking.
 - New "Replace Healer Icon" setting. Turns Healer Icon into Healer Cross.
 - New "Per Class" Static DR Icon setting. Aka show Blind icon on Rogue and Fear icon on Priest etc.
+- New swipe animation settings: Disable & Reverse, for DR, Class Icon and Trinket/Racial.
 - Castbars now instantly hide on finished casts.
 - Interrupt durations now take interrupt reduction auras into consideration.
 - Now shows duration on auras that don't have durations implemented by default (Smoke Bomb, Earthen Wall, Barrier, etc)

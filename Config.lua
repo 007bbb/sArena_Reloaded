@@ -1567,7 +1567,7 @@ else
                                     },
                                     classColors = {
                                         order = 1,
-                                        name = "Use Class Colors",
+                                        name = "Class Color Frames",
                                         desc = "When disabled, health bars will be green",
                                         type = "toggle",
                                         width = "full",
@@ -1585,6 +1585,23 @@ else
                                                     frame.HealthBar:SetStatusBarColor(color.r, color.g, color.b, 1)
                                                 else
                                                     frame.HealthBar:SetStatusBarColor(0, 1, 0, 1)
+                                                end
+                                            end
+                                        end,
+                                    },
+                                    classColorNames = {
+                                        order = 1.1,
+                                        name = "Class Color Names",
+                                        desc = "When enabled, player names will be colored by class",
+                                        type = "toggle",
+                                        width = "full",
+                                        get = function(info) return info.handler.db.profile.classColorNames end,
+                                        set = function(info, val)
+                                            info.handler.db.profile.classColorNames = val
+                                            for i = 1, sArenaMixin.maxArenaOpponents do
+                                                local frame = info.handler["arena" .. i]
+                                                if frame.Name:IsShown() then
+                                                    frame:UpdateNameColor()
                                                 end
                                             end
                                         end,

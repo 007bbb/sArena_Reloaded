@@ -11,10 +11,6 @@ sArenaMixin.defaultSettings = {
         showArenaNumber = false,
         showDecimalsDR = true,
         showDecimalsClassIcon = true,
-        invertClassIconCooldown = false,
-        invertTrinketRacialCooldown = false,
-        disableClassIconSwipe = false,
-        disableTrinketRacialSwipe = false,
         darkMode = (BetterBlizzFramesDB and BetterBlizzFramesDB.darkModeUi) or C_AddOns.IsAddOnLoaded("FrameColor") or nil,
         statusText = {
             usePercentage = false,
@@ -1116,6 +1112,7 @@ function sArenaMixin:SetLayout(_, layout)
         frame:UpdateClassIconSwipeSettings()
         frame:UpdateTrinketRacialSwipeSettings()
         frame:DarkModeFrame()
+        frame:UpdateNameColor()
     end
 
     self:ModernOrClassicCastbar()
@@ -1531,6 +1528,27 @@ function sArenaMixin:AddMasqueSupport()
     end
 end
 
+function sArenaFrameMixin:UpdateNameColor()
+    if not self.Name:IsShown() then return end
+
+    local class = (self.unit and select(2, UnitClass(self.unit))) or self.tempClass
+    if not class then return end
+
+    local color = RAID_CLASS_COLORS[class]
+    if self.parent.db.profile.classColorNames and color then
+        if not self.oldNameColor then
+            local r, g, b, a = self.Name:GetTextColor()
+            self.oldNameColor = {r, g, b, a}
+        end
+        self.Name:SetTextColor(color.r, color.g, color.b, 1)
+    else
+        if self.oldNameColor then
+            self.Name:SetTextColor(unpack(self.oldNameColor))
+            self.oldNameColor = nil
+        end
+    end
+end
+
 function sArenaFrameMixin:UpdatePlayer(unitEvent)
     local unit = self.unit
 
@@ -1556,9 +1574,11 @@ function sArenaFrameMixin:UpdatePlayer(unitEvent)
 
     if (db.profile.showNames) then
         self.Name:SetText(UnitName(unit))
+        self:UpdateNameColor()
         self.Name:SetShown(true)
     elseif (db.profile.showArenaNumber) then
         self.Name:SetText(self.unit)
+        self:UpdateNameColor()
         self.Name:SetShown(true)
     end
 
@@ -1744,6 +1764,7 @@ end
 function sArenaFrameMixin:ResetLayout()
     self.currentClassIconTexture = nil
     self.currentClassIconStartTime = 0
+    self.oldNameColor = nil
 
     ResetTexture(nil, self.ClassIcon)
     ResetStatusBar(self.HealthBar)
@@ -2325,6 +2346,7 @@ function sArenaMixin:Test()
 
         frame.Name:SetText((db.profile.showArenaNumber and "arena" .. i) or data.name)
         frame.Name:SetShown(db.profile.showNames or db.profile.showArenaNumber)
+        frame:UpdateNameColor()
 
         -- Trinket
         frame.Trinket.Cooldown:SetCooldown(currTime, math.random(5, 35))

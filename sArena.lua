@@ -835,10 +835,15 @@ function sArenaMixin:OnEvent(event, ...)
 end
 
 local function ChatCommand(input)
-    if not input or input:trim() == "" then
+    local cmd = (input or ""):trim():lower()
+    if cmd == "" then
         LibStub("AceConfigDialog-3.0"):Open("sArena")
-    elseif input:trim():lower() == "convert" then
+    elseif cmd == "convert" then
         sArenaMixin:OldConvert()
+    elseif cmd:match("^test%s*[1-5]$") then
+        sArenaMixin.testUnits = tonumber(cmd:match("(%d)"))
+        input = "test"
+        LibStub("AceConfigCmd-3.0").HandleCommand("sArena", "sarena", "sArena", input)
     else
         LibStub("AceConfigCmd-3.0").HandleCommand("sArena", "sarena", "sArena", input)
     end
@@ -2299,7 +2304,7 @@ function sArenaMixin:Test()
 
     local topFrame
 
-    for i = 1, sArenaMixin.maxArenaOpponents do
+    for i = 1, (sArenaMixin.testUnits or sArenaMixin.maxArenaOpponents) do
         local frame = self["arena" .. i]
         local data = shuffledPlayers[i]
 
@@ -2604,6 +2609,16 @@ function sArenaMixin:Test()
                     drFrame.__MSQ_New_Normal:SetDesaturated(true)
                     drFrame.__MSQ_New_Normal:SetVertexColor(0, 1, 0, 1)
                 end
+            end
+        end
+    end
+
+    local testCount = sArenaMixin.testUnits or sArenaMixin.maxArenaOpponents
+    if testCount < sArenaMixin.maxArenaOpponents then
+        for i = testCount + 1, sArenaMixin.maxArenaOpponents do
+            local frame = self["arena" .. i]
+            if frame then
+                frame:Hide()
             end
         end
     end

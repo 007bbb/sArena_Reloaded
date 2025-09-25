@@ -1,3 +1,6 @@
+2.0.1
+- Add /sarena test1-5 command.
+
 2.0.0
 - This sArena version has now also launched as a Retail version! Everything below is for both versions (but MoP needs some more data for the non-duration auras)
 - New Retail layout

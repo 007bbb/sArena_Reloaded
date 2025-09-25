@@ -1706,6 +1706,17 @@ else
                                             end
                                         end,
                                     },
+                                    skipMysteryGray = {
+                                        order = 8,
+                                        name = "Skip Mystery Gray",
+                                        type = "toggle",
+                                        width = "full",
+                                        desc = "Prevents mystery players from having gray status bars. Mystery players are unseen players, aka before gates open and stealthed ones.",
+                                        get = function(info) return info.handler.db.profile.skipMysteryGray end,
+                                        set = function(info, val)
+                                            info.handler.db.profile.skipMysteryGray = val
+                                        end,
+                                    },
 
                                 },
                             },

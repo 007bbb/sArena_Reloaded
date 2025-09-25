@@ -16,6 +16,7 @@ sArenaMixin.defaultSettings = {
             usePercentage = false,
             alwaysShow = true,
         },
+        skipMysteryGray = false,
         layoutSettings = {},
     }
 }
@@ -1602,15 +1603,18 @@ function sArenaFrameMixin:UpdatePlayer(unitEvent)
 end
 
 function sArenaFrameMixin:SetMysteryPlayer()
-    local f = self.HealthBar
-    f:SetMinMaxValues(0, 100)
-    f:SetValue(100)
-    f:SetStatusBarColor(0.5, 0.5, 0.5)
+    local hp = self.HealthBar
+    hp:SetMinMaxValues(0, 100)
+    hp:SetValue(100)
 
-    f = self.PowerBar
-    f:SetMinMaxValues(0, 100)
-    f:SetValue(100)
-    f:SetStatusBarColor(0.5, 0.5, 0.5)
+    local pp = self.PowerBar
+    pp:SetMinMaxValues(0, 100)
+    pp:SetValue(100)
+
+    if not self.parent.db.profile.skipMysteryGray then
+        hp:SetStatusBarColor(0.5, 0.5, 0.5)
+        pp:SetStatusBarColor(0.5, 0.5, 0.5)
+    end
 
     self.hideStatusText = true
     self:SetStatusText()

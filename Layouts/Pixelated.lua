@@ -181,10 +181,16 @@ function sArenaMixin:AddPixelBorder()
                 if not frame.parent.db.profile.layoutSettings[layoutName].dr.brightDRBorder then
                     drFrame.Border:Hide()
                     CreatePixelTextureBorder(drFrame, drFrame, "PixelBorder", drSize, offset)
-                    if i == 1 then
-                        drFrame.PixelBorder:SetVertexColor(1, 0, 0, 1)
+
+                    local blackDRBorder = frame.parent.db.profile.layoutSettings[layoutName].dr and frame.parent.db.profile.layoutSettings[layoutName].dr.blackDRBorder
+                    if blackDRBorder then
+                        drFrame.PixelBorder:SetVertexColor(0, 0, 0, 1)
                     else
-                        drFrame.PixelBorder:SetVertexColor(0, 1, 0, 1)
+                        if i == 1 then
+                            drFrame.PixelBorder:SetVertexColor(1, 0, 0, 1)
+                        else
+                            drFrame.PixelBorder:SetVertexColor(0, 1, 0, 1)
+                        end
                     end
                 else
                     -- If bright borders are enabled, make sure pixel border is hidden

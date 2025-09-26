@@ -18,6 +18,7 @@ sArenaMixin.defaultSettings = {
         },
         skipMysteryGray = false,
         layoutSettings = {},
+        invertClassIconCooldown = true,
     }
 }
 

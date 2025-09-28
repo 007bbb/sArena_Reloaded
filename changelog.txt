@@ -1,3 +1,9 @@
+2.0.3
+- Interrupted castbars no longer instantly hide but instead show who interrupted and fades the castbar out slowly.
+- Fix some hide castbar events
+- Fix two lua errors due to typos
+- Don't show cooldown spiral on trinket if no trinket texture.
+
 2.0.2
 - Add new aura stacks indicator in bottom left corner of Class/Aura Icon.
 - Add new text settings that lets you move and resize name, health, etc.

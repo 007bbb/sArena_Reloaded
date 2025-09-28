@@ -1728,7 +1728,7 @@ function sArenaFrameMixin:GetClass()
     elseif (not self.class) then
         local id = self:GetID()
         if (GetNumArenaOpponentSpecs() >= id) then
-            local specID = GetArenaOpponentSpec(id)
+            local specID = GetArenaOpponentSpec(id) or 0
             if (specID > 0) then
                 local _, specName, _, specTexture, _, class, classLocal = GetSpecializationInfoByID(specID)
                 self.class = class
@@ -1805,7 +1805,7 @@ function sArenaFrameMixin:UpdateClassIcon()
         end
 
         local cropType = useHealerTexture and "healer" or "class"
-        self:SetTextureCrop(self.ClassIcon, self.parent.layoutdb.cropIcons, cropType)
+        self:SetTextureCrop(self.ClassIcon, db.profile.layoutSettings[db.profile.currentLayout].cropIcons, cropType)
 
 		return
 	end

@@ -1281,9 +1281,11 @@ function sArenaFrameMixin:OnLoad()
         UNIT_SPELLCAST_CHANNEL_STOP        = true,
         UNIT_SPELLCAST_CHANNEL_INTERRUPTED = true,
     }
-    self.CastBar:HookScript("OnEvent", function(self, event)
-        if CastStopEvents[event] then
-            self:Hide()
+    self.CastBar:HookScript("OnEvent", function(castBar, event, eventUnit)
+        if CastStopEvents[event] and eventUnit == unit then
+            if not UnitCastingInfo(unit) and not UnitChannelInfo(unit) then
+                castBar:Hide()
+            end
         end
     end)
 

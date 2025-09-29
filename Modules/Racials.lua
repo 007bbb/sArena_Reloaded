@@ -231,9 +231,6 @@ if isRetail then
 				if self.RacialMsq then
 					self.RacialMsq:Show()
 				end
-				if self.PixelBorders and self.PixelBorders.racial then
-					self.PixelBorders.racial:Show()
-				end
 			end
 		end
 	end
@@ -278,18 +275,12 @@ else
 				if self.RacialMsq then
 					self.RacialMsq:Show()
 				end
-				if self.PixelBorders and self.PixelBorders.racial then
-					self.PixelBorders.racial:Show()
-				end
 			end
 
 			if self.parent.db.profile.swapHumanTrinket and self.race == "Human" then
 				self.Racial.Texture:SetTexture(nil)
 				if self.RacialMsq then
 					self.RacialMsq:Hide()
-				end
-				if self.PixelBorders and self.PixelBorders.racial then
-					self.PixelBorders.racial:Hide()
 				end
 
 				if self.parent.db.profile.colorTrinket then
@@ -313,9 +304,6 @@ function sArenaFrameMixin:ResetRacial()
     self.Racial.Cooldown:Clear()
     if self.RacialMsq then
         self.RacialMsq:Hide()
-    end
-    if self.PixelBorders and self.PixelBorders.racial then
-        self.PixelBorders.racial:Hide()
     end
     self:UpdateRacial()
 end

@@ -1361,9 +1361,6 @@ function sArenaFrameMixin:OnEvent(event, eventUnit, arg1)
                     if self.TrinketMsq then
                         self.TrinketMsq:Show()
                     end
-                    if self.PixelBorders and self.PixelBorders.trinket then
-                        self.PixelBorders.trinket:Show()
-                    end
                 else
                     self:UpdateTrinketIcon()
                 end
@@ -2387,10 +2384,6 @@ function sArenaMixin:Test()
         frame:Show()
         frame:SetAlpha(1)
         frame.HealthBar:SetAlpha(1)
-        if frame.PixelBorders and not frame.PixelBorders.hide then
-            frame.PixelBorders.trinket:Show()
-            frame.PixelBorders.racial:Show()
-        end
 
         frame.HealthBar:SetMinMaxValues(0, 100)
         frame.HealthBar:SetValue(100)

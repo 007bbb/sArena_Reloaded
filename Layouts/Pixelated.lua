@@ -173,11 +173,6 @@ function sArenaMixin:AddPixelBorder()
         CreatePixelTextureBorder(frame.SpecIcon, frame.SpecIcon, "specIcon", size, offset)
         CreatePixelTextureBorder(frame.CastBar, frame.CastBar, "castBar", size, offset)
         CreatePixelTextureBorder(frame.CastBar, frame.CastBar.Icon, "castBarIcon", size, offset)
-        frame.CastBar.Icon:ClearAllPoints()
-        frame.CastBar.Icon:SetPoint("RIGHT", frame.CastBar, "LEFT", 0, 0)
-
-        frame.CastBar.Icon:ClearAllPoints()
-        frame.CastBar.Icon:SetPoint("RIGHT", frame.CastBar, "LEFT", 0, 0)
         frame:SetTextureCrop(frame.CastBar.Icon, true)
 
         for n = 1, #self.drCategories do
@@ -419,6 +414,27 @@ function layout:Initialize(frame)
     frame.Racial.Cooldown:SetSwipeColor(0, 0, 0, 0.6)
     frame.Racial.Cooldown:SetUseCircularEdge(false)
 
+    if not frame.Trinket.TrinketPixelBorderHook then
+        hooksecurefunc(frame.Trinket.Texture, "SetTexture", function(self, t)
+            if t == nil or t == "" or t == 0 or t == "nil" or frame.parent.db.profile.currentLayout ~= layoutName then
+                frame.PixelBorders.trinket:Hide()
+            else
+                frame.PixelBorders.trinket:Show()
+            end
+        end)
+        frame.Trinket.TrinketPixelBorderHook = true
+    end
+
+    if not frame.Racial.RacialPixelBorderHook then
+        hooksecurefunc(frame.Racial.Texture, "SetTexture", function(self, t)
+            if t == nil or t == "" or t == 0 or t == "nil" or frame.parent.db.profile.currentLayout ~= layoutName then
+                frame.PixelBorders.racial:Hide()
+            else
+                frame.PixelBorders.racial:Show()
+            end
+        end)
+        frame.Racial.RacialPixelBorderHook = true
+    end
 
     frame.PowerBar:SetHeight(self.db.powerBarHeight)
 

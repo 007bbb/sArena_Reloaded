@@ -61,9 +61,6 @@ function sArenaFrameMixin:UpdateTrinket()
             if self.TrinketMsq then
                 self.TrinketMsq:Show()
             end
-            if self.PixelBorders and self.PixelBorders.trinket then
-                self.PixelBorders.trinket:Show()
-            end
         end
         if (startTime ~= 0 and duration ~= 0 and self.Trinket.spellID) then
             if self.Trinket.Texture:GetTexture() then
@@ -92,8 +89,5 @@ function sArenaFrameMixin:ResetTrinket()
     self.Trinket.Texture:SetDesaturated(false)
     if self.TrinketMsq then
         self.TrinketMsq:Hide()
-    end
-    if self.PixelBorders and self.PixelBorders.trinket then
-        self.PixelBorders.trinket:Hide()
     end
 end

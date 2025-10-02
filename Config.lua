@@ -1923,7 +1923,7 @@ local function setDRIcons()
 end
 
 
-local function CompatabilityIssueExists()
+local function CompatibilityIssueExists()
     -- List of known sArena addon variants that will conflict
     local otherSArenaVersions = {
         "sArena", -- Original
@@ -1943,7 +1943,7 @@ local function CompatabilityIssueExists()
 end
 
 
-if CompatabilityIssueExists() then
+if CompatibilityIssueExists() then
     sArenaMixin.optionsTable = {
         type = "group",
         childGroups = "tab",
@@ -2010,7 +2010,7 @@ if CompatabilityIssueExists() then
                         name = "|cffffffffUse sArena |cffff8000Reloaded|r |T135884:13:13|t: Don't import other settings",
                         desc = "This will disable the other sArena for compatibility and reload your UI so you can start using sArena |cffff8000Reloaded|r |T135884:13:13|t without your other settings.",
                         func = function()
-                            sArenaMixin:CompatabilityEnsurer()
+                            sArenaMixin:CompatibilityEnsurer()
                             ReloadUI()
                         end,
                         width = "full",

@@ -212,24 +212,8 @@ function sArenaMixin:ImportOtherForkSettings()
         end
     end
 
-    -- Disable any other active sArena versions to prevent conflicts after reload
-    -- This is only done with the user's specific consent by choosing to import as thoroughly explained in the GUI
-    -- List of known sArena addon variants that should be disabled
-    local otherSArenaVersions = {
-        "sArena", -- Original
-        "sArena Updated",
-        "sArena_Pinaclonada",
-        "sArena_Updated2_by_sammers",
-    }
-
-    -- Disable any other active sArena versions to prevent conflicts after reload
-    -- This is only done with the user's specific consent by choosing to import as thoroughly explained in the GUI
-    -- List of known sArena addon variants that should be disabled
-    for _, addonName in ipairs(otherSArenaVersions) do
-        if C_AddOns.IsAddOnLoaded(addonName) then
-            C_AddOns.DisableAddOn(addonName)
-        end
-    end
+    -- Ensure comp
+    self:CompatibilityEnsurer()
 
     -- Ensure sArena Reloaded is enabled (should already be, but being safe)
     C_AddOns.EnableAddOn("sArena_Reloaded")
@@ -242,8 +226,10 @@ function sArenaMixin:ImportOtherForkSettings()
     ReloadUI()
 end
 
-function sArenaMixin:CompatabilityEnsurer()
-    -- List of known sArena addons that will conflict
+function sArenaMixin:CompatibilityEnsurer()
+    -- Disable any other active sArena versions due to compatibility issues, two sArenas cannot coexist
+    -- This is only done with the user's specific consent by choosing to import as thoroughly explained in the GUI
+    -- List of known sArena addon variants that needs to be disabled for compatibility's sake
     local otherSArenaVersions = {
         "sArena", -- Original
         "sArena Updated",
@@ -251,7 +237,7 @@ function sArenaMixin:CompatabilityEnsurer()
         "sArena_Updated2_by_sammers",
     }
 
-    -- Ensure compatability
+    -- Ensure compatibility
     for _, addonName in ipairs(otherSArenaVersions) do
         if C_AddOns.IsAddOnLoaded(addonName) then
             C_AddOns.DisableAddOn(addonName)
@@ -384,7 +370,7 @@ function sArenaMixin:CheckClassStacking()
         if count > 1 then
             for i = 1, self.maxArenaOpponents do
                 local frame = _G["sArenaEnemyFrame"..i]
-                if frame:IsHealer(self.unit) then
+                if frame:IsHealer(frame.unit) then
                     return true
                 end
             end

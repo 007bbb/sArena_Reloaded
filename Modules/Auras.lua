@@ -1,5 +1,6 @@
 local isRetail = sArenaMixin.isRetail
 local GetSpellTexture = GetSpellTexture or C_Spell.GetSpellTexture
+local tooltipInfoAuras = {}
 
 if isRetail then
     sArenaMixin.interruptList = {
@@ -24,6 +25,9 @@ if isRetail then
         [351338] = 4, -- Quell (Evoker)
         [97547]  = 4, -- Solar Beam
     }
+
+    -- Auras we want tooltip info from to display as stacks
+    --tooltipInfoAuras = {}
 
     sArenaMixin.auraList = {
         -- Spell ID = Priority
@@ -555,6 +559,12 @@ else
         [26090] = 2, -- Pummel (Gorilla)
         [50479] = 2, -- Nethershock
         [97547] = 5, -- Solar Beam
+    }
+
+    -- Auras we want tooltip info from to display as stacks
+    tooltipInfoAuras = {
+        [115867] = true, -- Mana Tea
+        [125195] = true, -- Tigereye Brew
     }
 
     sArenaMixin.auraList = {
@@ -1097,6 +1107,27 @@ local function AuraTooltipContains(unit, index, filter, search)
     return false
 end
 
+local function AuraTooltipExtractPercent(unit, index, filter)
+    tooltipScanner:ClearLines()
+    tooltipScanner:SetUnitAura(unit, index, filter)
+
+    local line
+    for i = 1, tooltipScanner:NumLines() do
+        line = _G["sArenaTooltipScannerTextLeft" .. i]
+        if line then
+            local text = line:GetText()
+            if text then
+                local percent = text:match("(%d+%%)")
+                if percent then
+                    return percent
+                end
+            end
+        end
+    end
+
+    return nil
+end
+
 function sArenaFrameMixin:FindAura()
     local unit = self.unit
     local auraList = sArenaMixin.auraList
@@ -1131,10 +1162,20 @@ function sArenaFrameMixin:FindAura()
                 local texture = aura.icon
                 local applications = aura.applications or 0
 
-                -- -- Icebound Fortitude, Check if it's glyphed to be immune to CC
-                if spellID == 51271 and not isRetail then
-                    if AuraTooltipContains(unit, n, filter, "70%%") then
-                        priority = 7
+                -- Mists of Pandaria unique checks
+                if not isRetail then
+                    -- Icebound Fortitude, Check if it's glyphed to be immune to CC
+                    if spellID == 51271 then
+                        if AuraTooltipContains(unit, n, filter, "70%%") then
+                            priority = 7
+                        end
+                    end
+                    -- Handle percentage-based auras
+                    if tooltipInfoAuras[spellID] then
+                        local percent = AuraTooltipExtractPercent(unit, n, filter)
+                        if percent then
+                            applications = percent
+                        end
                     end
                 end
 
@@ -1184,8 +1225,17 @@ function sArenaFrameMixin:FindAura()
 end
 
 function sArenaFrameMixin:UpdateAuraStacks()
-    if self.currentAuraApplications and self.currentAuraApplications >= 2 then
+    if not self.currentAuraApplications then
+        self.AuraStacks:SetText("")
+        return
+    end
+
+    -- Show percentage for percentage-based auras, stacks >= 2 for others
+    if tooltipInfoAuras[self.currentAuraSpellID] then
         self.AuraStacks:SetText(self.currentAuraApplications)
+    elseif self.currentAuraApplications >= 2 then
+        self.AuraStacks:SetText(self.currentAuraApplications)
+        self.AuraStacks:SetScale(1)
     else
         self.AuraStacks:SetText("")
     end

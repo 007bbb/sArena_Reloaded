@@ -1997,7 +1997,7 @@ function sArenaFrameMixin:ResetLayout()
     self.ClassIconCooldown:SetUseCircularEdge(false)
     self.ClassIconCooldown:SetSwipeTexture(1)
     self.AuraStacks:SetPoint("BOTTOMLEFT", self.ClassIcon, "BOTTOMLEFT", 2, 0)
-    self.AuraStacks:SetFont("Interface\\AddOns\\sArena_Reloaded\\Textures\\arialn.ttf", 15, "THICKOUTLINE")
+    self.AuraStacks:SetFont("Interface\\AddOns\\sArena_Reloaded\\Textures\\arialn.ttf", 14, "THICKOUTLINE")
 
     self.ClassIcon:RemoveMaskTexture(self.ClassIconMask)
     self.ClassIcon:SetDrawLayer("BORDER", 1)
@@ -2324,6 +2324,7 @@ local testPlayers = {
     { template = "FERAL_DRUID", name = "Bean" },
     { template = "FERAL_DRUID", name = "Snupy" },
     { template = "AFF_WARLOCK", name = "Chan" },
+    { template = "AFF_WARLOCK", name = "Merce" },
     { template = "ARMS_WARRIOR", name = "Trillebartom" },
     { template = "DISC_PRIEST", name = "Hydra" },
     { template = "HOLY_PRIEST", name = "Mehh" },

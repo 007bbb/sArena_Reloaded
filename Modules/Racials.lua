@@ -180,8 +180,8 @@ local function GetRemainingCD(frame)
 end
 
 function sArenaFrameMixin:GetSharedCD()
-    -- Human healers have Will to Survive Shared CD reduced from 90 to 60 sec.
-    if self.race == "Human" and self:IsHealer(self.unit) and self.Trinket.spellID == 336126 then
+    -- Human healers have Will to Survive Shared CD reduced from 90 to 60 sec on Retail.
+    if self.race == "Human" and self:IsHealer(self.unit) and isRetail and self.Trinket.spellID == 336126 then
         return 60
     end
     return racialData[self.race] and racialData[self.race].sharedCD

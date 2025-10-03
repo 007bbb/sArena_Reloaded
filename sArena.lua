@@ -840,7 +840,7 @@ function sArenaMixin:OnEvent(event, ...)
 
         -- Interrupts
         if sArenaMixin.interruptList[spellID] then
-            if combatEvent == "SPELL_INTERRUPT" or combatEvent == "SPELL_CAST_SUCCESS" then
+            if combatEvent == "SPELL_INTERRUPT" then
                 for i = 1, sArenaMixin.maxArenaOpponents do
                     if (destGUID == UnitGUID("arena" .. i)) then
                         local ArenaFrame = self["arena" .. i]

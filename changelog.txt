@@ -1,6 +1,6 @@
 2.0.6
 - New Format Numbers setting which is on by default. 18888 K -> 18.88 M
-- New adjustable decimal threshold, default still 6 seconds. Only for non-OmniCC users, configurate your OmniCC properly if you are using that.
+- New adjustable decimal threshold, default still 6 seconds. Only for non-OmniCC users, configurate your OmniCC instead if you are using that.
 - Added DR Static Icons: Per Spec option
 - Added DR Categories Per Class & Per Spec options
 

@@ -89,7 +89,7 @@ local function CreatePixelTextureBorder(parent, target, key, size, offset)
 
         local edges = {}
         for i = 1, 4 do
-            local tex = holder:CreateTexture(nil, "OVERLAY")
+            local tex = holder:CreateTexture(nil, "BORDER", nil, 7)
             tex:SetColorTexture(0,0,0,1)
             tex:SetIgnoreParentScale(true)
             edges[i] = tex
@@ -150,6 +150,7 @@ function sArenaMixin:AddPixelBorder()
         if not frame.PixelBorders then
             frame.PixelBorders = CreateFrame("Frame", nil, frame)
             frame.PixelBorders:SetAllPoints()
+            frame.PixelBorders:SetFrameLevel(frame:GetFrameLevel() - 1)
         end
 
         local borders = frame.PixelBorders

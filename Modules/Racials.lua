@@ -344,24 +344,24 @@ else
 				if self.RacialMsq then
 					self.RacialMsq:Show()
 				end
-			end
 
-			local swapEnabled = self.parent.db.profile.swapRacialTrinket or self.parent.db.profile.swapHumanTrinket
-			if swapEnabled then
-				self.Racial.Texture:SetTexture(nil)
-				if self.RacialMsq then
-					self.RacialMsq:Hide()
-				end
-
-				if self.parent.db.profile.colorTrinket then
-					local start, duration = self.Trinket.Cooldown:GetCooldownTimes()
-					if duration and duration > 0 and (start > 0) then
-						self.Trinket.Texture:SetColorTexture(1, 0, 0)
-					else
-						self.Trinket.Texture:SetColorTexture(0, 1, 0)
+				local swapEnabled = self.parent.db.profile.swapRacialTrinket or self.parent.db.profile.swapHumanTrinket
+				if swapEnabled then
+					self.Racial.Texture:SetTexture(nil)
+					if self.RacialMsq then
+						self.RacialMsq:Hide()
 					end
-				else
-					self.Trinket.Texture:SetTexture(racialData[self.race].texture)
+
+					if self.parent.db.profile.colorTrinket then
+						local start, duration = self.Trinket.Cooldown:GetCooldownTimes()
+						if duration and duration > 0 and (start > 0) then
+							self.Trinket.Texture:SetColorTexture(1, 0, 0)
+						else
+							self.Trinket.Texture:SetColorTexture(0, 1, 0)
+						end
+					else
+						self.Trinket.Texture:SetTexture(racialData[self.race].texture)
+					end
 				end
 			end
 		end

@@ -2199,18 +2199,6 @@ else
                                             info.handler:Test()
                                         end,
                                     },
-                                    showDecimalsClassIcon = {
-                                        order = 3,
-                                        name = "Show Decimals on Class Icon",
-                                        desc = "Show Decimals on Class Icon when duration is below 6 seconds.\n\nOnly for non-OmniCC users.",
-                                        type = "toggle",
-                                        width = "full",
-                                        get = function(info) return info.handler.db.profile.showDecimalsClassIcon end,
-                                        set = function(info, val)
-                                            info.handler.db.profile.showDecimalsClassIcon = val
-                                            info.handler:SetupCustomCD()
-                                        end
-                                    },
                                     showNames = {
                                         order = 4,
                                         name = "Show Names",
@@ -2297,6 +2285,36 @@ else
                                         set = function(info, val)
                                             info.handler.db.profile.colorMysteryGray = val
                                         end,
+                                    },
+                                    showDecimalsClassIcon = {
+                                        order = 9,
+                                        name = "Show Decimals on Class Icon",
+                                        desc =
+                                        "Show Decimals on Class Icon when duration is below 6 seconds.\n\nOnly for non-OmniCC users.",
+                                        type = "toggle",
+                                        width = 1.4,
+                                        get = function(info) return info.handler.db.profile.showDecimalsClassIcon end,
+                                        set = function(info, val)
+                                            info.handler.db.profile.showDecimalsClassIcon = val
+                                            info.handler:SetupCustomCD()
+                                        end
+                                    },
+                                    decimalThreshold = {
+                                        order = 10,
+                                        name = "Decimal Threshold",
+                                        desc = "Show decimals when remaining time is below this threshold. Default is 6 seconds.",
+                                        type = "range",
+                                        min = 1,
+                                        max = 10,
+                                        step = 0.1,
+                                        width = 0.75,
+                                        disabled = function(info) return not info.handler.db.profile.showDecimalsClassIcon end,
+                                        get = function(info) return info.handler.db.profile.decimalThreshold or 6 end,
+                                        set = function(info, val)
+                                            info.handler.db.profile.decimalThreshold = val
+                                            info.handler:UpdateDecimalThreshold()
+                                            info.handler:SetupCustomCD()
+                                        end
                                     },
 
                                 },
@@ -2433,12 +2451,14 @@ else
                                     drResetTime = {
                                         order = 1,
                                         name = "DR Reset Time",
-                                        desc = "Blizzard no longer uses a dynamic timer for DR resets, it is 18 seconds\n\nBy default sArena has a 0.5 leeway added so a total of 18.5 seconds.",
+                                        desc =
+                                        "Blizzard no longer uses a dynamic timer for DR resets, it is 18 seconds\n\nBy default sArena has a 0.5 leeway added so a total of 18.5 seconds.",
                                         type = "range",
                                         min = 18,
                                         max = 20,
                                         step = 0.1,
                                         bigStep = 0.5,
+                                        width = "normal",
                                         get = function(info)
                                             return info.handler.db.profile.drResetTime or 18.5
                                         end,
@@ -2447,15 +2467,39 @@ else
                                             info.handler:UpdateDRTimeSetting()
                                         end,
                                     },
+                                    drResetTime_break = {
+                                        order = 1.1,
+                                        type = "description",
+                                        name = " ",
+                                        width = "full",
+                                    },
                                     showDecimalsDR = {
                                         order = 2,
                                         name = "Show Decimals on DR's",
-                                        desc = "Show Decimals on DR's when duration is below 6 seconds.\n\nOnly for non-OmniCC users.",
+                                        desc =
+                                        "Show Decimals on DR's when duration is below 6 seconds.\n\nOnly for non-OmniCC users.",
                                         type = "toggle",
-                                        width = "full",
+                                        width = 1.2,
                                         get = function(info) return info.handler.db.profile.showDecimalsDR end,
                                         set = function(info, val)
                                             info.handler.db.profile.showDecimalsDR = val
+                                            info.handler:SetupCustomCD()
+                                        end
+                                    },
+                                    decimalThresholdDR = {
+                                        order = 2.5,
+                                        name = "Decimal Threshold",
+                                        desc = "Show decimals when remaining time is below this threshold. Default is 6 seconds.",
+                                        type = "range",
+                                        min = 1,
+                                        max = 10,
+                                        step = 0.1,
+                                        width = 0.75,
+                                        disabled = function(info) return not info.handler.db.profile.showDecimalsDR end,
+                                        get = function(info) return info.handler.db.profile.decimalThreshold or 6 end,
+                                        set = function(info, val)
+                                            info.handler.db.profile.decimalThreshold = val
+                                            info.handler:UpdateDecimalThreshold()
                                             info.handler:SetupCustomCD()
                                         end
                                     },

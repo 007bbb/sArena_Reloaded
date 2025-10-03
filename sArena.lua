@@ -11,6 +11,7 @@ sArenaMixin.defaultSettings = {
         showArenaNumber = false,
         showDecimalsDR = true,
         showDecimalsClassIcon = true,
+        decimalThreshold = 6,
         darkMode = (BetterBlizzFramesDB and BetterBlizzFramesDB.darkModeUi) or C_AddOns.IsAddOnLoaded("FrameColor") or nil,
         statusText = {
             usePercentage = false,
@@ -31,6 +32,7 @@ sArenaMixin.trinketTexture = (isRetail and 1322720) or 133453
 sArenaMixin.pFont = "Interface\\AddOns\\sArena_Reloaded\\Textures\\Prototype.ttf"
 C_AddOns.EnableAddOn("sArena_Reloaded") -- Make sure users don't get maliciously targeted
 local LSM = LibStub("LibSharedMedia-3.0")
+local decimalThreshold = 6 -- Default value, will be updated from db
 LSM:Register("statusbar", "Blizzard RetailBar", [[Interface\AddOns\sArena_Reloaded\Textures\BlizzardRetailBar]])
 LSM:Register("statusbar", "sArena Default", [[Interface\AddOns\sArena_Reloaded\Textures\sArenaDefault]])
 LSM:Register("statusbar", "sArena Stripes", [[Interface\AddOns\sArena_Reloaded\Textures\sArenaHealer]])
@@ -955,6 +957,7 @@ function sArenaMixin:Initialize()
     self:UpdateCleanups(db)
 
     self:UpdateDRTimeSetting()
+    self:UpdateDecimalThreshold()
 
     db.RegisterCallback(self, "OnProfileChanged", "RefreshConfig")
     db.RegisterCallback(self, "OnProfileCopied", "RefreshConfig")
@@ -1056,6 +1059,9 @@ function sArenaMixin:SetupGrayTrinket()
     end
 end
 
+function sArenaMixin:UpdateDecimalThreshold()
+    decimalThreshold = self.db.profile.decimalThreshold or 6
+end
 
 function sArenaMixin:CreateCustomCooldown(cooldown, showDecimals)
     local text = cooldown.sArenaText or cooldown:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
@@ -1084,7 +1090,7 @@ function sArenaMixin:CreateCustomCooldown(cooldown, showDecimals)
             local remaining = (start + duration) - GetTime()
 
             if remaining > 0 then
-                if remaining < 6 then
+                if remaining < decimalThreshold then
                     text:SetFormattedText("%.1f", remaining)
                 elseif remaining < 60 then
                     text:SetFormattedText("%d", remaining)

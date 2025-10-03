@@ -7,16 +7,12 @@ function sArenaFrameMixin:FindTrinket()
 end
 
 function sArenaFrameMixin:GetFactionTrinketIcon()
-    -- if self.parent.db.profile.colorTrinket then
-    --     self.Trinket.Texture:SetColorTexture(0,1,0)
-    -- else
-        local faction, _ = UnitFactionGroup(self.unit)
-        if (faction == "Alliance") then
-            self.Trinket.Texture:SetTexture(133452)
-        else
-            self.Trinket.Texture:SetTexture(133453)
-        end
-    --end
+    local faction, _ = UnitFactionGroup(self.unit)
+    if (faction == "Alliance") then
+        return 133452
+    else
+        return 133453
+    end
 end
 
 function sArenaFrameMixin:UpdateTrinketIcon(available)
@@ -62,26 +58,34 @@ function sArenaFrameMixin:UpdateTrinket()
             local wasRacialOnTrinketSlot = self.updateRacialOnTrinketSlot
 
             self.Trinket.spellID = spellID
-            if spellTextureNoOverride and not isRetail then
-                self:GetFactionTrinketIcon()
-            else
-                self.Trinket.Texture:SetTexture(spellTextureNoOverride or 638661) -- Surrender flag if no trinket
 
-                -- Determine if we should put racial on trinket slot
-                local swapEnabled = self.parent.db.profile.swapRacialTrinket or self.parent.db.profile.swapHumanTrinket
-                local shouldPutRacialOnTrinket = swapEnabled and self.race and not spellTextureNoOverride
-
-                -- If we found a real trinket and had racial on trinket slot, restore racial to its proper place
-                if spellTextureNoOverride and wasRacialOnTrinketSlot then
-                    self.updateRacialOnTrinketSlot = nil
-                    self:UpdateRacial()
+            local trinketTexture
+            if spellTextureNoOverride then
+                if isRetail then
+                    trinketTexture = self:GetFactionTrinketIcon()
                 else
-                    self.updateRacialOnTrinketSlot = shouldPutRacialOnTrinket
-                    if self.updateRacialOnTrinketSlot then
-                        self:UpdateRacial()
-                    end
+                    trinketTexture = spellTextureNoOverride
+                end
+            else
+                trinketTexture = 638661     -- Surrender flag if no trinket
+            end
+            self.Trinket.Texture:SetTexture(trinketTexture)
+
+            -- Determine if we should put racial on trinket slot
+            local swapEnabled = self.parent.db.profile.swapRacialTrinket or self.parent.db.profile.swapHumanTrinket
+            local shouldPutRacialOnTrinket = swapEnabled and self.race and not spellTextureNoOverride
+
+            -- If we found a real trinket and had racial on trinket slot, restore racial to its proper place
+            if spellTextureNoOverride and wasRacialOnTrinketSlot then
+                self.updateRacialOnTrinketSlot = nil
+                self:UpdateRacial()
+            else
+                self.updateRacialOnTrinketSlot = shouldPutRacialOnTrinket
+                if self.updateRacialOnTrinketSlot then
+                    self:UpdateRacial()
                 end
             end
+
             self:UpdateTrinketIcon(true)
             if self.TrinketMsq then
                 self.TrinketMsq:Show()

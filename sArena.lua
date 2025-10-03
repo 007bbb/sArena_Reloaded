@@ -1442,16 +1442,25 @@ function sArenaFrameMixin:OnEvent(event, eventUnit, arg1)
                 if arg1 ~= 0 then
                     self.Trinket.spellID = arg1
                     local _, spellTextureNoOverride = GetSpellTexture(arg1)
-                    if spellTextureNoOverride and not isRetail then
-                        self:GetFactionTrinketIcon()
-                    else
-                        self.Trinket.Texture:SetTexture(spellTextureNoOverride or 638661)     -- Surrender flag if no trinket
-                        local swapEnabled = db.profile.swapRacialTrinket
-                        self.updateRacialOnTrinketSlot = swapEnabled and self.race and not spellTextureNoOverride
-                        if self.updateRacialOnTrinketSlot then
-                            self:UpdateRacial()
+
+                    local trinketTexture
+                    if spellTextureNoOverride then
+                        if isRetail then
+                            trinketTexture = self:GetFactionTrinketIcon()
+                        else
+                            trinketTexture = spellTextureNoOverride
                         end
+                    else
+                        trinketTexture = 638661     -- Surrender flag if no trinket
                     end
+
+                    self.Trinket.Texture:SetTexture(trinketTexture)
+                    local swapEnabled = db.profile.swapRacialTrinket
+                    self.updateRacialOnTrinketSlot = swapEnabled and self.race and not spellTextureNoOverride
+                    if self.updateRacialOnTrinketSlot then
+                        self:UpdateRacial()
+                    end
+
                     self:UpdateTrinketIcon(true)
                     if self.TrinketMsq then
                         self.TrinketMsq:Show()

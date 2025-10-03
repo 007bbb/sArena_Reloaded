@@ -48,12 +48,6 @@ if isRetail then
 		["Disarm"] = 132343,
 	}
 
-	sArenaMixin.defaultSettings.profile.drStaticIconsPerClass = false
-	sArenaMixin.defaultSettings.profile.drIconsPerClass = {}
-
-	sArenaMixin.defaultSettings.profile.drStaticIconsPerClass = false
-	sArenaMixin.defaultSettings.profile.drIconsPerClass = {}
-
 	drList = {
 		[207167]  = "Disorient", -- Blinding Sleet
 		[207685]  = "Disorient", -- Sigil of Misery
@@ -606,10 +600,17 @@ function sArenaFrameMixin:FindDR(combatEvent, spellID)
 	end
 	-- Determine which texture to use for the DR icon.
 	local useStatic = self.parent.db.profile.drStaticIcons
+	local usePerSpec = self.parent.db.profile.drStaticIconsPerSpec
 	local usePerClass = self.parent.db.profile.drStaticIconsPerClass
 	local textureID = nil
 
-	if usePerClass and useStatic then
+	if usePerSpec and useStatic then
+		local perSpec = self.parent.db.profile.drIconsPerSpec
+		local specKey = tostring(sArenaMixin.playerSpecID or 0)
+		if perSpec and perSpec[specKey] and perSpec[specKey][category] then
+			textureID = perSpec[specKey][category]
+		end
+	elseif usePerClass and useStatic then
 		local perClass = self.parent.db.profile.drIconsPerClass
 		if perClass and perClass[sArenaMixin.playerClass] and perClass[sArenaMixin.playerClass][category] then
 			textureID = perClass[sArenaMixin.playerClass][category]
@@ -625,13 +626,13 @@ function sArenaFrameMixin:FindDR(combatEvent, spellID)
 	end
 
 	frame.Icon:SetTexture(textureID)
-	
+
 	-- Check if black DR borders are enabled
 	local layout = self.parent.db.profile.layoutSettings[self.parent.db.profile.currentLayout]
 	local blackDRBorder = layout.dr and layout.dr.blackDRBorder
 	local borderColor = blackDRBorder and {0, 0, 0, 1} or severityColor[frame.severity]
 	local pixelBorderColor = blackDRBorder and {0, 0, 0, 1} or severityColor[frame.severity]
-	
+
 	frame.Border:SetVertexColor(unpack(borderColor))
     if frame.PixelBorder then
         frame.PixelBorder:SetVertexColor(unpack(pixelBorderColor))

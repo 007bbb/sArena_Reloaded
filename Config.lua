@@ -1849,7 +1849,12 @@ local function setDRIcons()
             name = function(info)
                 local db = info.handler.db
                 local icon = nil
-                if db.profile.drStaticIconsPerClass then
+                if db.profile.drStaticIconsPerSpec then
+                    local specKey = tostring(sArenaMixin.playerSpecID or 0)
+                    local perSpec = db.profile.drIconsPerSpec or {}
+                    local specIcons = perSpec[specKey] or {}
+                    icon = specIcons[category]
+                elseif db.profile.drStaticIconsPerClass then
                     local classKey = select(2, UnitClass("player"))
                     local perClass = db.profile.drIconsPerClass or {}
                     local classIcons = perClass[classKey] or {}
@@ -1872,10 +1877,20 @@ local function setDRIcons()
             width = "full",
             get = function(info)
                 local db = info.handler.db
-                -- If per-class is enabled, prefer the class-specific value when present.
-                -- If the class-specific value is missing, show the global saved icon or the default icon
+                -- If per-spec is enabled, prefer the spec-specific value when present.
+                -- If the spec-specific value is missing, show the global saved icon or the default icon
                 -- so the edit box isn't empty and the user sees the effective icon.
-                if db.profile.drStaticIconsPerClass then
+                if db.profile.drStaticIconsPerSpec then
+                    local perSpec = db.profile.drIconsPerSpec or {}
+                    local specIcons = perSpec[tostring(sArenaMixin.playerSpecID or 0)] or {}
+                    local specVal = specIcons[category]
+                    if specVal ~= nil and specVal ~= "" then
+                        return tostring(specVal)
+                    end
+                    -- fallback to global saved icon or default icon
+                    local dbIcons = db.profile.drIcons or {}
+                    return tostring(dbIcons[category] or defaultIcon or "")
+                elseif db.profile.drStaticIconsPerClass then
                     local perClass = db.profile.drIconsPerClass or {}
                     local classIcons = perClass[sArenaMixin.playerClass] or {}
                     local classVal = classIcons[category]
@@ -1892,7 +1907,19 @@ local function setDRIcons()
             end,
             set = function(info, value)
                 local db = info.handler.db
-                if db.profile.drStaticIconsPerClass then
+                if db.profile.drStaticIconsPerSpec then
+                    db.profile.drIconsPerSpec = db.profile.drIconsPerSpec or {}
+                    local specKey = tostring(sArenaMixin.playerSpecID or 0)
+                    db.profile.drIconsPerSpec[specKey] = db.profile.drIconsPerSpec[specKey] or {}
+                    -- treat empty string as removal of the spec-specific override so we fall back
+                    -- to the global saved icon/default.
+                    if value == nil or tostring(value) == "" then
+                        db.profile.drIconsPerSpec[specKey][category] = nil
+                    else
+                        local num = tonumber(value)
+                        db.profile.drIconsPerSpec[specKey][category] = num or value
+                    end
+                elseif db.profile.drStaticIconsPerClass then
                     db.profile.drIconsPerClass = db.profile.drIconsPerClass or {}
                     db.profile.drIconsPerClass[sArenaMixin.playerClass] = db.profile.drIconsPerClass[sArenaMixin.playerClass] or {}
                     -- treat empty string as removal of the class-specific override so we fall back
@@ -2559,6 +2586,24 @@ else
                                 get = function(info) return info.handler.db.profile.drStaticIconsPerClass end,
                                 set = function(info, val)
                                     info.handler.db.profile.drStaticIconsPerClass = val
+                                    if val then
+                                        info.handler.db.profile.drStaticIconsPerSpec = false
+                                    end
+                                    LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena")
+                                end,
+                            },
+                            dynamicIconsPerSpec = {
+                                order = 3.2,
+                                name = "Static Icons: Per Spec",
+                                desc = "When enabled, the list below becomes specialization-specific for your current spec. It still includes all default icons so you wont see an immediate change, you must manually change any you want to customize.",
+                                type = "toggle",
+                                disabled = function(info) return not info.handler.db.profile.drStaticIcons end,
+                                get = function(info) return info.handler.db.profile.drStaticIconsPerSpec end,
+                                set = function(info, val)
+                                    info.handler.db.profile.drStaticIconsPerSpec = val
+                                    if val then
+                                        info.handler.db.profile.drStaticIconsPerClass = false
+                                    end
                                     LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena")
                                 end,
                             },
@@ -2571,7 +2616,12 @@ else
                                 get = function(info)
                                     local key = info[#info]
                                     local db = info.handler.db
-                                    if db.profile.drStaticIconsPerClass then
+                                    if db.profile.drStaticIconsPerSpec then
+                                        local specKey = tostring(sArenaMixin.playerSpecID or 0)
+                                        local perSpec = db.profile.drIconsPerSpec or {}
+                                        local specIcons = perSpec[specKey] or {}
+                                        return tostring(specIcons[key] or "")
+                                    elseif db.profile.drStaticIconsPerClass then
                                         local classKey = select(2, UnitClass("player"))
                                         local perClass = db.profile.drIconsPerClass or {}
                                         local classIcons = perClass[classKey] or {}
@@ -2584,7 +2634,12 @@ else
                                     local key = info[#info]
                                     local db = info.handler.db
                                     local num = tonumber(value)
-                                    if db.profile.drStaticIconsPerClass then
+                                    if db.profile.drStaticIconsPerSpec then
+                                        db.profile.drIconsPerSpec = db.profile.drIconsPerSpec or {}
+                                        local specKey = tostring(sArenaMixin.playerSpecID or 0)
+                                        db.profile.drIconsPerSpec[specKey] = db.profile.drIconsPerSpec[specKey] or {}
+                                        db.profile.drIconsPerSpec[specKey][key] = num or value
+                                    elseif db.profile.drStaticIconsPerClass then
                                         db.profile.drIconsPerClass = db.profile.drIconsPerClass or {}
                                         local classKey = select(2, UnitClass("player"))
                                         db.profile.drIconsPerClass[classKey] = db.profile.drIconsPerClass[classKey] or {}

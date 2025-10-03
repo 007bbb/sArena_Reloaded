@@ -775,6 +775,7 @@ end
 function sArenaMixin:OnLoad()
     self:RegisterEvent("PLAYER_LOGIN")
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
+    self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 end
 
 local combatEvents = {
@@ -872,6 +873,7 @@ function sArenaMixin:OnEvent(event, ...)
 
     elseif (event == "PLAYER_LOGIN") then
         self:Initialize()
+        self:UpdatePlayerSpec()
         self:SetupCastColor()
         self:SetupGrayTrinket()
         self:AddMasqueSupport()
@@ -890,6 +892,7 @@ function sArenaMixin:OnEvent(event, ...)
         self:SetMouseState(true)
 
         if (instanceType == "arena") then
+            self:UpdatePlayerSpec()
             if TestTitle then
                 TestTitle:Hide()
                 for i = 1, sArenaMixin.maxArenaOpponents do
@@ -913,6 +916,8 @@ function sArenaMixin:OnEvent(event, ...)
                 self:HandleArenaStart()
             end)
         end
+    elseif event == "PLAYER_SPECIALIZATION_CHANGED" then
+        self:UpdatePlayerSpec()
     end
 end
 
@@ -939,6 +944,25 @@ function sArenaMixin:UpdateCleanups(db)
     if db.profile.swapHumanTrinket ~= nil and db.profile.swapRacialTrinket == nil then
         db.profile.swapRacialTrinket = db.profile.swapHumanTrinket
         db.profile.swapHumanTrinket = nil
+    end
+end
+
+function sArenaMixin:UpdatePlayerSpec()
+    local currentSpec = sArenaMixin.isRetail and GetSpecialization() or C_SpecializationInfo.GetSpecialization()
+    if currentSpec and currentSpec > 0 then
+        local specID, specName
+        if sArenaMixin.isRetail then
+            specID, specName = GetSpecializationInfo(currentSpec)
+        else
+            specID, specName = C_SpecializationInfo.GetSpecializationInfo(currentSpec)
+        end
+
+        -- Only update if we actually got valid spec data
+        if specID and specID > 0 and specName then
+            sArenaMixin.playerSpecID = specID
+            sArenaMixin.playerSpecName = specName
+            LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena")
+        end
     end
 end
 

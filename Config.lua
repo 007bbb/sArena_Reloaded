@@ -1836,7 +1836,16 @@ local function setDRIcons()
         drIconsTitle = {
             order = 1,
             type = "description",
-            name = "Configure DR Icons",
+            name = function(info)
+                local db = info.handler.db
+                if db.profile.drStaticIconsPerSpec then
+                    return "Configure DR Icons (Per Spec)"
+                elseif db.profile.drStaticIconsPerClass then
+                    return "Configure DR Icons (Per Class)"
+                else
+                    return "Configure DR Icons (Global)"
+                end
+            end,
             fontSize = "medium",
         }
     }
@@ -1850,12 +1859,12 @@ local function setDRIcons()
                 local db = info.handler.db
                 local icon = nil
                 if db.profile.drStaticIconsPerSpec then
-                    local specKey = tostring(sArenaMixin.playerSpecID or 0)
+                    local specKey = sArenaMixin.playerSpecID or 0
                     local perSpec = db.profile.drIconsPerSpec or {}
                     local specIcons = perSpec[specKey] or {}
                     icon = specIcons[category]
                 elseif db.profile.drStaticIconsPerClass then
-                    local classKey = select(2, UnitClass("player"))
+                    local classKey = sArenaMixin.playerClass
                     local perClass = db.profile.drIconsPerClass or {}
                     local classIcons = perClass[classKey] or {}
                     icon = classIcons[category]
@@ -1882,7 +1891,7 @@ local function setDRIcons()
                 -- so the edit box isn't empty and the user sees the effective icon.
                 if db.profile.drStaticIconsPerSpec then
                     local perSpec = db.profile.drIconsPerSpec or {}
-                    local specIcons = perSpec[tostring(sArenaMixin.playerSpecID or 0)] or {}
+                    local specIcons = perSpec[sArenaMixin.playerSpecID or 0] or {}
                     local specVal = specIcons[category]
                     if specVal ~= nil and specVal ~= "" then
                         return tostring(specVal)
@@ -1909,7 +1918,7 @@ local function setDRIcons()
                 local db = info.handler.db
                 if db.profile.drStaticIconsPerSpec then
                     db.profile.drIconsPerSpec = db.profile.drIconsPerSpec or {}
-                    local specKey = tostring(sArenaMixin.playerSpecID or 0)
+                    local specKey = sArenaMixin.playerSpecID or 0
                     db.profile.drIconsPerSpec[specKey] = db.profile.drIconsPerSpec[specKey] or {}
                     -- treat empty string as removal of the spec-specific override so we fall back
                     -- to the global saved icon/default.
@@ -2560,69 +2569,164 @@ else
                             },
                             categories = {
                                 order = 2,
-                                name = "Categories",
-                                type = "multiselect",
-                                get = function(info, key) return info.handler.db.profile.drCategories[key] end,
-                                set = function(info, key, val) info.handler.db.profile.drCategories[key] = val end,
-                                values = drCategories,
+                                name = "DR Categories",
+                                type = "group",
+                                inline = true,
+                                args = {
+                                    drCategoriesPerClass = {
+                                        order = 1,
+                                        name = "Per Class",
+                                        desc = "When enabled, the DR categories below become class-specific for your current class.\n\n|cff888888It still includes all default categories so you won't see an immediate change, you must manually change any you want to customize.|r",
+                                        type = "toggle",
+                                        get = function(info) return info.handler.db.profile.drCategoriesPerClass end,
+                                        set = function(info, val)
+                                            info.handler.db.profile.drCategoriesPerClass = val
+                                            if val then
+                                                info.handler.db.profile.drCategoriesPerSpec = false
+                                            end
+                                            LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena")
+                                        end,
+                                    },
+                                    drCategoriesPerSpec = {
+                                        order = 2,
+                                        name = "Per Spec",
+                                        desc = "When enabled, the DR categories below become specialization-specific for your current spec.\n\n|cff888888It still includes all default categories so you won't see an immediate change, you must manually change any you want to customize.|r",
+                                        type = "toggle",
+                                        get = function(info) return info.handler.db.profile.drCategoriesPerSpec end,
+                                        set = function(info, val)
+                                            info.handler.db.profile.drCategoriesPerSpec = val
+                                            if val then
+                                                info.handler.db.profile.drCategoriesPerClass = false
+                                            end
+                                            LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena")
+                                        end,
+                                    },
+
+                                    categoriesMultiselect = {
+                                        order = 4,
+                                        name = function(info)
+                                            local db = info.handler.db
+                                            if db.profile.drCategoriesPerSpec then
+                                                return "Categories (Per Spec)"
+                                            elseif db.profile.drCategoriesPerClass then
+                                                return "Categories (Per Class)"
+                                            else
+                                                return "Categories (Global)"
+                                            end
+                                        end,
+                                        type = "multiselect",
+                                        get = function(info, key) 
+                                            local db = info.handler.db
+                                            if db.profile.drCategoriesPerSpec then
+                                                local specKey = sArenaMixin.playerSpecID or 0
+                                                local perSpec = db.profile.drCategoriesSpec or {}
+                                                local specCategories = perSpec[specKey] or {}
+                                                if specCategories[key] ~= nil then
+                                                    return specCategories[key]
+                                                else
+                                                    return db.profile.drCategories[key]
+                                                end
+                                            elseif db.profile.drCategoriesPerClass then
+                                                local classKey = sArenaMixin.playerClass
+                                                local perClass = db.profile.drCategoriesClass or {}
+                                                local classCategories = perClass[classKey] or {}
+                                                if classCategories[key] ~= nil then
+                                                    return classCategories[key]
+                                                else
+                                                    return db.profile.drCategories[key]
+                                                end
+                                            else
+                                                return db.profile.drCategories[key]
+                                            end
+                                        end,
+                                        set = function(info, key, val) 
+                                            local db = info.handler.db
+                                            if db.profile.drCategoriesPerSpec then
+                                                db.profile.drCategoriesSpec = db.profile.drCategoriesSpec or {}
+                                                local specKey = sArenaMixin.playerSpecID or 0
+                                                db.profile.drCategoriesSpec[specKey] = db.profile.drCategoriesSpec[specKey] or {}
+                                                db.profile.drCategoriesSpec[specKey][key] = val
+                                            elseif db.profile.drCategoriesPerClass then
+                                                db.profile.drCategoriesClass = db.profile.drCategoriesClass or {}
+                                                local classKey = sArenaMixin.playerClass
+                                                db.profile.drCategoriesClass[classKey] = db.profile.drCategoriesClass[classKey] or {}
+                                                db.profile.drCategoriesClass[classKey][key] = val
+                                            else
+                                                db.profile.drCategories[key] = val
+                                            end
+                                        end,
+                                        values = drCategories,
+                                    },
+                                },
                             },
                             dynamicIcons = {
                                 order = 3,
-                                name = "Static Icons",
-                                desc = "DR icons will always use a specific icon for each DR category.",
-                                type = "toggle",
-                                get = function(info) return info.handler.db.profile.drStaticIcons end,
-                                set = function(info, val)
-                                    info.handler.db.profile.drStaticIcons = val
-                                    LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena")
-                                end,
-                            },
-                            dynamicIconsPerClass = {
-                                order = 3.1,
-                                name = "Static Icons: Per Class",
-                                desc = "When enabled, the list below becomes class-specific for your current class. It still includes all default icons so you wont see an immediate change, you must manually change any you want to customize.",
-                                type = "toggle",
-                                disabled = function(info) return not info.handler.db.profile.drStaticIcons end,
-                                get = function(info) return info.handler.db.profile.drStaticIconsPerClass end,
-                                set = function(info, val)
-                                    info.handler.db.profile.drStaticIconsPerClass = val
-                                    if val then
-                                        info.handler.db.profile.drStaticIconsPerSpec = false
-                                    end
-                                    LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena")
-                                end,
-                            },
-                            dynamicIconsPerSpec = {
-                                order = 3.2,
-                                name = "Static Icons: Per Spec",
-                                desc = "When enabled, the list below becomes specialization-specific for your current spec. It still includes all default icons so you wont see an immediate change, you must manually change any you want to customize.",
-                                type = "toggle",
-                                disabled = function(info) return not info.handler.db.profile.drStaticIcons end,
-                                get = function(info) return info.handler.db.profile.drStaticIconsPerSpec end,
-                                set = function(info, val)
-                                    info.handler.db.profile.drStaticIconsPerSpec = val
-                                    if val then
-                                        info.handler.db.profile.drStaticIconsPerClass = false
-                                    end
-                                    LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena")
-                                end,
-                            },
-                            drIconsSection = {
+                                name = "DR Icons",
+                                type = "group",
+                                inline = true,
+                                args = {
+                                    drStaticIcons = {
+                                        order = 1,
+                                        name = "Enable Static Icons",
+                                        desc = "DR icons will always use a specific icon for each DR category.",
+                                        type = "toggle",
+                                        get = function(info) return info.handler.db.profile.drStaticIcons end,
+                                        set = function(info, val)
+                                            info.handler.db.profile.drStaticIcons = val
+                                            LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena")
+                                        end,
+                                    },
+                                    dynamicIconsPerClass = {
+                                        order = 2,
+                                        name = "Per Class",
+                                        desc = "When enabled, the icons below become class-specific for your current class.\n\n|cff888888It still includes all default icons so you won't see an immediate change, you must manually change any you want to customize.|r",
+                                        type = "toggle",
+                                        disabled = function(info) return not info.handler.db.profile.drStaticIcons end,
+                                        get = function(info) return info.handler.db.profile.drStaticIconsPerClass end,
+                                        set = function(info, val)
+                                            info.handler.db.profile.drStaticIconsPerClass = val
+                                            if val then
+                                                info.handler.db.profile.drStaticIconsPerSpec = false
+                                            end
+                                            LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena")
+                                        end,
+                                    },
+                                    dynamicIconsPerSpec = {
+                                        order = 3,
+                                        name = "Per Spec",
+                                        desc = "When enabled, the icons below become specialization-specific for your current spec.\n\n|cff888888It still includes all default icons so you won't see an immediate change, you must manually change any you want to customize.|r",
+                                        type = "toggle",
+                                        disabled = function(info) return not info.handler.db.profile.drStaticIcons end,
+                                        get = function(info) return info.handler.db.profile.drStaticIconsPerSpec end,
+                                        set = function(info, val)
+                                            info.handler.db.profile.drStaticIconsPerSpec = val
+                                            if val then
+                                                info.handler.db.profile.drStaticIconsPerClass = false
+                                            end
+                                            LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena")
+                                        end,
+                                    },
+                                    staticIconsSeparator = {
+                                        order = 4,
+                                        name = "",
+                                        type = "header",
+                                    },
+                                                                drIconsSection = {
                                 order = 4,
                                 type = "group",
-                                name = "DR Icons Settings",
+                                name = "",
                                 inline = true,
                                 disabled = function(info) return not info.handler.db.profile.drStaticIcons end,
                                 get = function(info)
                                     local key = info[#info]
                                     local db = info.handler.db
                                     if db.profile.drStaticIconsPerSpec then
-                                        local specKey = tostring(sArenaMixin.playerSpecID or 0)
+                                        local specKey = sArenaMixin.playerSpecID or 0
                                         local perSpec = db.profile.drIconsPerSpec or {}
                                         local specIcons = perSpec[specKey] or {}
                                         return tostring(specIcons[key] or "")
                                     elseif db.profile.drStaticIconsPerClass then
-                                        local classKey = select(2, UnitClass("player"))
+                                        local classKey = sArenaMixin.playerClass
                                         local perClass = db.profile.drIconsPerClass or {}
                                         local classIcons = perClass[classKey] or {}
                                         return tostring(classIcons[key] or "")
@@ -2636,12 +2740,12 @@ else
                                     local num = tonumber(value)
                                     if db.profile.drStaticIconsPerSpec then
                                         db.profile.drIconsPerSpec = db.profile.drIconsPerSpec or {}
-                                        local specKey = tostring(sArenaMixin.playerSpecID or 0)
+                                        local specKey = sArenaMixin.playerSpecID or 0
                                         db.profile.drIconsPerSpec[specKey] = db.profile.drIconsPerSpec[specKey] or {}
                                         db.profile.drIconsPerSpec[specKey][key] = num or value
                                     elseif db.profile.drStaticIconsPerClass then
                                         db.profile.drIconsPerClass = db.profile.drIconsPerClass or {}
-                                        local classKey = select(2, UnitClass("player"))
+                                        local classKey = sArenaMixin.playerClass
                                         db.profile.drIconsPerClass[classKey] = db.profile.drIconsPerClass[classKey] or {}
                                         db.profile.drIconsPerClass[classKey][key] = num or value
                                     else
@@ -2651,6 +2755,8 @@ else
                                     LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena")
                                 end,
                                 args = setDRIcons(),
+                            },
+                                },
                             },
                         },
                     },

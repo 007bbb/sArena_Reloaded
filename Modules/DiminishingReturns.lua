@@ -565,7 +565,26 @@ end
 
 function sArenaFrameMixin:FindDR(combatEvent, spellID)
 	local category = drList[spellID]
-	if (not self.parent.db.profile.drCategories[category]) then return end
+	
+	-- Check if this DR category is enabled (considering per-spec, per-class, or global settings)
+	local categoryEnabled = false
+	local db = self.parent.db.profile
+	
+	if db.drCategoriesPerSpec then
+		local specKey = sArenaMixin.playerSpecID or 0
+		local perSpec = db.drCategoriesSpec or {}
+		local specCategories = perSpec[specKey] or {}
+		categoryEnabled = specCategories[category] ~= nil and specCategories[category] or db.drCategories[category]
+	elseif db.drCategoriesPerClass then
+		local classKey = sArenaMixin.playerClass
+		local perClass = db.drCategoriesClass or {}
+		local classCategories = perClass[classKey] or {}
+		categoryEnabled = classCategories[category] ~= nil and classCategories[category] or db.drCategories[category]
+	else
+		categoryEnabled = db.drCategories[category]
+	end
+	
+	if not categoryEnabled then return end
 
 	local frame = self[category]
 	local currTime = GetTime()
@@ -606,7 +625,7 @@ function sArenaFrameMixin:FindDR(combatEvent, spellID)
 
 	if usePerSpec and useStatic then
 		local perSpec = self.parent.db.profile.drIconsPerSpec
-		local specKey = tostring(sArenaMixin.playerSpecID or 0)
+		local specKey = sArenaMixin.playerSpecID or 0
 		if perSpec and perSpec[specKey] and perSpec[specKey][category] then
 			textureID = perSpec[specKey][category]
 		end

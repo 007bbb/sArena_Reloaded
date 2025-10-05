@@ -199,8 +199,11 @@ function sArenaFrameMixin:FindRacial(spellID)
 	if duration and not trinkets[spellID] then
 		-- Check if we're using swapRacialTrinket and racial is displayed on trinket slot
 		if self.updateRacialOnTrinketSlot then
-			-- Apply racial cooldown to trinket slot instead
-			self.Trinket.Cooldown:SetCooldown(currTime, duration)
+			-- Apply racial cooldown to trinket slot instead (only if not surrender flag)
+			local trinketTexture = self.Trinket.Texture:GetTexture()
+			if trinketTexture and trinketTexture ~= sArenaMixin.noTrinketTexture then
+				self.Trinket.Cooldown:SetCooldown(currTime, duration)
+			end
 			if self.parent.db.profile.colorTrinket then
 				self.Trinket.Texture:SetColorTexture(1, 0, 0)
 			else
@@ -220,7 +223,8 @@ function sArenaFrameMixin:FindRacial(spellID)
 			local sharedCD = self:GetSharedCD()
 
 			if sharedCD and remainingCD < sharedCD then
-				if self.Trinket.Texture:GetTexture() then
+				local trinketTexture = self.Trinket.Texture:GetTexture()
+				if trinketTexture and trinketTexture ~= sArenaMixin.noTrinketTexture then
 					self.Trinket.Cooldown:SetCooldown(currTime, sharedCD)
 				end
 				if self.parent.db.profile.colorTrinket then
@@ -262,7 +266,7 @@ function sArenaFrameMixin:UpdateRacial()
 				if not self.updateRacialOnTrinketSlot then
 					self.Racial.Texture:SetTexture(racialData[self.race].texture)
 				else
-					if not trinketTexture or trinketTexture == 638661 or (racialData[self.race] and trinketTexture == racialData[self.race].texture) then
+					if not trinketTexture or trinketTexture == sArenaMixin.noTrinketTexture or (racialData[self.race] and trinketTexture == racialData[self.race].texture) then
 						self.Racial.Texture:SetTexture(nil)
 
 						if self.parent.db.profile.colorTrinket then
@@ -279,7 +283,10 @@ function sArenaFrameMixin:UpdateRacial()
 
 						local start, duration = self.Racial.Cooldown:GetCooldownTimes()
 						if duration and duration > 0 and (start > 0) then
-							self.Trinket.Cooldown:SetCooldown(start / 1000.0, duration / 1000.0)
+							local trinketTexture = self.Trinket.Texture:GetTexture()
+							if trinketTexture and trinketTexture ~= sArenaMixin.noTrinketTexture then
+								self.Trinket.Cooldown:SetCooldown(start / 1000.0, duration / 1000.0)
+							end
 						end
 						self.Racial.Cooldown:Clear()
 					else

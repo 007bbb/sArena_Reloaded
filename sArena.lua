@@ -29,6 +29,7 @@ local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
 sArenaMixin.isRetail = isRetail
 sArenaMixin.playerClass = select(2, UnitClass("player"))
 sArenaMixin.maxArenaOpponents = (isRetail and 3) or 5
+sArenaMixin.noTrinketTexture = 638661
 sArenaMixin.trinketTexture = (isRetail and 1322720) or 133453
 sArenaMixin.pFont = "Interface\\AddOns\\sArena_Reloaded\\Textures\\Prototype.ttf"
 C_AddOns.EnableAddOn("sArena_Reloaded") -- Make sure users don't get maliciously targeted
@@ -1455,7 +1456,7 @@ function sArenaFrameMixin:OnEvent(event, eventUnit, arg1)
                             trinketTexture = self:GetFactionTrinketIcon()
                         end
                     else
-                        trinketTexture = 638661     -- Surrender flag if no trinket
+                        trinketTexture = sArenaMixin.noTrinketTexture     -- Surrender flag if no trinket
                     end
 
                     -- Handle racial updates based on trinket state (same logic as UpdateTrinket)

@@ -72,7 +72,7 @@ function sArenaFrameMixin:UpdateTrinket()
                     trinketTexture = self:GetFactionTrinketIcon()
                 end
             else
-                trinketTexture = 638661     -- Surrender flag if no trinket
+                trinketTexture = sArenaMixin.noTrinketTexture     -- Surrender flag if no trinket
             end
 
             -- Handle racial updates based on trinket state
@@ -99,7 +99,8 @@ function sArenaFrameMixin:UpdateTrinket()
             self:UpdateTrinketIcon(true)
         end
         if (startTime ~= 0 and duration ~= 0 and self.Trinket.spellID) then
-            if self.Trinket.Texture:GetTexture() then
+            local currentTexture = self.Trinket.Texture:GetTexture()
+            if currentTexture and currentTexture ~= sArenaMixin.noTrinketTexture then
                 if self.updateRacialOnTrinketSlot then
                     local racialDuration = self:GetRacialDuration()
                     self.Trinket.Cooldown:SetCooldown(startTime / 1000.0, racialDuration)

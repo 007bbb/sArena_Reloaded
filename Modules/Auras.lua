@@ -564,7 +564,7 @@ else
     -- Auras we want tooltip info from to display as stacks
     tooltipInfoAuras = {
         [115867] = true, -- Mana Tea
-        [125195] = true, -- Tigereye Brew
+        [1247275] = true, -- Tigereye Brew
     }
 
     sArenaMixin.auraList = {
@@ -912,23 +912,19 @@ else
         [34936]  = 2, -- Backlash
         [50334]  = 2, -- Berserk
         [2825]   = 2, -- Bloodlust
-        --[14177]  = 2, -- Cold Blood --not mop
         [12292]  = 2, -- Death Wish
         [16166]  = 2, -- Elemental Mastery
         [12051]  = 2, -- Evocation
-        --[18708]  = 2, -- Fel Domination --not mop
         [12472]  = 2, -- Icy Veins
         [131078] = 2, -- Icy Veins (split)
         [32182]  = 2, -- Heroism
         [51690]  = 2, -- Killing Spree
-        --[47241]  = 2, -- Metamorphasis --not mop
         [17941]  = 2, -- Shadow Trance
         [10060]  = 2, -- Power Infusion
         [3045]   = 2, -- Rapid Fire
         [1719]   = 2, -- Recklessness
         [51713]  = 2, -- Shadow Dance
         [107574] = 2, -- Avatar
-        --[79140]  = 2, -- Vendetta
         [121471] = 2, -- Shadow Blades
         [105809] = 2, -- Holy Avenger
         [86698]  = 2, -- Guardian of Ancient Kings (alt)
@@ -947,6 +943,7 @@ else
         [137639] = 2, -- Storm, Earth, and Fire
         [12328]  = 2, -- Sweeping Strikes
         [84747]  = 1.9, -- Deep Insight (Red Buff Rogue)
+        [1247275] = 1.9, -- Tigereye Brew (Monk)
 
 
         [76577] = 1.8, -- Smoke Bomb
@@ -994,6 +991,7 @@ else
         -- Miscellaneous
         [25771]  = 0.3, -- Forbearance (debuff)
         [22734]  = 0.2, -- Drink
+        [115867] = 0.1, -- Mana Tea
         --[28612]  = 0.2, -- Cojured Food --not mop
         --[33717]  = 0.2, -- Cojured Food --not mop
         [108366] = 0.1, -- Soul Leech

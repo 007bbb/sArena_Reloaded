@@ -1842,9 +1842,24 @@ local function setDRIcons()
             name = function(info)
                 local db = info.handler.db
                 if db.profile.drStaticIconsPerSpec then
-                    return "Configure DR Icons (Per Spec)"
+                    local className = select(1, UnitClass("player")) or "Unknown"
+                    local classKey = select(2, UnitClass("player"))
+                    local specName = sArenaMixin.playerSpecName or "Unknown"
+                    local classColor = RAID_CLASS_COLORS[classKey]
+                    local coloredText = specName .. " " .. className
+                    if classColor then
+                        coloredText = "|c" .. classColor.colorStr .. coloredText .. "|r"
+                    end
+                    return "Configure DR Icons (Per Spec: " .. coloredText .. ")"
                 elseif db.profile.drStaticIconsPerClass then
-                    return "Configure DR Icons (Per Class)"
+                    local className = select(1, UnitClass("player")) or "Unknown"
+                    local classKey = select(2, UnitClass("player"))
+                    local classColor = RAID_CLASS_COLORS[classKey]
+                    local coloredText = className
+                    if classColor then
+                        coloredText = "|c" .. classColor.colorStr .. coloredText .. "|r"
+                    end
+                    return "Configure DR Icons (Per Class: " .. coloredText .. ")"
                 else
                     return "Configure DR Icons (Global)"
                 end
@@ -2170,7 +2185,7 @@ else
                                     formatNumbers = {
                                         order = 3,
                                         name = "Format Numbers",
-                                        desc = "Format large numbers with K/M suffixes (e.g., 392K, 1.80M)",
+                                        desc = "Format large numbers. 18888 K -> 18.88 M",
                                         type = "toggle",
                                         get = function(info) return info.handler.db.profile.statusText.formatNumbers end,
                                         set = function(info, val)
@@ -2532,7 +2547,6 @@ else
                                         min = 18,
                                         max = 20,
                                         step = 0.1,
-                                        bigStep = 0.5,
                                         width = "normal",
                                         get = function(info)
                                             return info.handler.db.profile.drResetTime or 18.5
@@ -2646,9 +2660,24 @@ else
                                         name = function(info)
                                             local db = info.handler.db
                                             if db.profile.drCategoriesPerSpec then
-                                                return "Categories (Per Spec)"
+                                                local className = select(1, UnitClass("player")) or "Unknown"
+                                                local classKey = select(2, UnitClass("player"))
+                                                local specName = sArenaMixin.playerSpecName or "Unknown"
+                                                local classColor = RAID_CLASS_COLORS[classKey]
+                                                local coloredText = specName .. " " .. className
+                                                if classColor then
+                                                    coloredText = "|c" .. classColor.colorStr .. coloredText .. "|r"
+                                                end
+                                                return "Categories (Per Spec: " .. coloredText .. ")"
                                             elseif db.profile.drCategoriesPerClass then
-                                                return "Categories (Per Class)"
+                                                local className = select(1, UnitClass("player")) or "Unknown"
+                                                local classKey = select(2, UnitClass("player"))
+                                                local classColor = RAID_CLASS_COLORS[classKey]
+                                                local coloredText = className
+                                                if classColor then
+                                                    coloredText = "|c" .. classColor.colorStr .. coloredText .. "|r"
+                                                end
+                                                return "Categories (Per Class: " .. coloredText .. ")"
                                             else
                                                 return "Categories (Global)"
                                             end

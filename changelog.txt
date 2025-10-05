@@ -4,6 +4,7 @@
 - Added DR Static Icons: Per Spec option
 - Added DR Categories Per Class & Per Spec options
 - New Swipe Animation setting: Disable Cooldown Swipe Edge
+- Fix issues with "Swap Missing Trinket with Racial" setting on MoP
 
 2.0.5
 - Change "Swap Human Racial" setting to instead be "Swap Missing Trinket with Racial". This will move all racials over to trinket spot if they don't have a trinket equipped. (This change is currently only uploaded for Retail due to more testing needed on MoP first)

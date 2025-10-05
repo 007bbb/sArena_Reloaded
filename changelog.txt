@@ -1,3 +1,6 @@
+2.0.8
+- Mists of Pandaria: Add Monk's Tigereye Brew as offensive prio and Mana Tea as very low prio. Also shows percentage. Feedback on this appreciated.
+
 2.0.7
 - Add option to disable White Flag no trinket texture. (Global -> Arena Frames -> Misc at bottom)
 - Fix shared racial/trinket cooldown showing on White Flag (no trinket texture) unintentionally.

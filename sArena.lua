@@ -2271,6 +2271,15 @@ local specTemplates = {
         specName = "Marksmanship",
         unint = true,
     },
+    SURV_HUNTER = {
+        class = "HUNTER",
+        specIcon = 461113,
+        castName = "Mending Bandage",
+        castIcon = isRetail and 1014022 or 133690,
+        racial = 136225,
+        specName = "Survival",
+        channel = true,
+    },
     ELE_SHAMAN = {
         class = "SHAMAN",
         specIcon = 136048,
@@ -2311,6 +2320,14 @@ local specTemplates = {
         racial = 135726,
         specName = "Affliction",
     },
+    DESTRO_WARLOCK = {
+        class = "WARLOCK",
+        specIcon = 136145,
+        castName = "Chaos Bolt",
+        castIcon = 136186,
+        racial = 135726,
+        specName = "Destruction",
+    },
     ARMS_WARRIOR = {
         class = "WARRIOR",
         specIcon = 132355,
@@ -2327,6 +2344,7 @@ local specTemplates = {
         castIcon = 237545,
         racial = 136187,
         specName = "Discipline",
+        channel = true,
     },
     HOLY_PRIEST = {
         class = "PRIEST",
@@ -2381,6 +2399,9 @@ local specTemplates = {
         specIcon = 135775,
         racial = 135726,
         specName = "Unholy",
+        castName = "Army of the Dead",
+        castIcon = 237511,
+        channel = true,
     },
     SUB_ROGUE = {
         class = "ROGUE",
@@ -2396,23 +2417,28 @@ local specTemplates = {
 local testPlayers = {
     { template = "BM_HUNTER", name = "Despytimes" },
     { template = "MM_HUNTER", name = "Jellybeans" },
+    { template = "SURV_HUNTER", name = "Bicmex" },
     { template = "ELE_SHAMAN", name = "Bluecheese" },
     { template = "ENH_SHAMAN", name = "Saul" },
     { template = "RESTO_SHAMAN", name = "Cdew" },
     { template = "RESTO_SHAMAN", name = "Absterge" },
     { template = "RESTO_SHAMAN", name = "Lontarito" },
+    { template = "RESTO_SHAMAN", name = "Foxyllama" },
     { template = "ELE_SHAMAN", name = "Whaazzlasso", castName = "Feet Up", castIcon = 133029 },
     { template = "RESTO_DRUID", name = "Metaphors" },
     { template = "RESTO_DRUID", name = "Flop" },
     { template = "FERAL_DRUID", name = "Sodapoopin" },
     { template = "FERAL_DRUID", name = "Bean" },
     { template = "FERAL_DRUID", name = "Snupy" },
+    { template = "FERAL_DRUID", name = "Whaazzform" },
     { template = "AFF_WARLOCK", name = "Chan" },
-    { template = "AFF_WARLOCK", name = "Merce" },
+    { template = "DESTRO_WARLOCK", name = "Merce" },
+    { template = "DESTRO_WARLOCK", name = "Infernion" },
+    { template = "DESTRO_WARLOCK", name = "Jazggz" },
     { template = "ARMS_WARRIOR", name = "Trillebartom" },
     { template = "DISC_PRIEST", name = "Hydra" },
     { template = "HOLY_PRIEST", name = "Mehh" },
-    { template = "FROST_MAGE", name = "Raiku (46)" },
+    { template = "FROST_MAGE", name = "Raiku" },
     { template = "FROST_MAGE", name = "Samiyam" },
     { template = "FROST_MAGE", name = "Aeghis" },
     { template = "FROST_MAGE", name = "Venruki" },
@@ -2749,7 +2775,7 @@ function sArenaMixin:Test()
                 frame.CastBar:SetStatusBarColor(0.7, 0.7, 0.7, 1)
             else
                 frame.CastBar.BorderShield:Hide()
-                if data.castName == "Penance" then
+                if data.channel then
                     frame.CastBar:SetStatusBarColor(0, 1, 0, 1)
                 else
                     frame.CastBar:SetStatusBarColor(1, 0.7, 0, 1)
@@ -2760,9 +2786,9 @@ function sArenaMixin:Test()
                 if keepDefaultModernTextures then
                     frame.CastBar:SetStatusBarColor(1,1,1,1)
                     if isRetail then
-                        frame.CastBar:SetStatusBarTexture(data.unint and "UI-CastingBar-Uninterruptable" or data.castName == "Penance" and "UI-CastingBar-Filling-Channel" or "ui-castingbar-filling-standard")
+                        frame.CastBar:SetStatusBarTexture(data.unint and "UI-CastingBar-Uninterruptable" or data.channel and "UI-CastingBar-Filling-Channel" or "ui-castingbar-filling-standard")
                     else
-                        frame.CastBar:SetStatusBarTexture(data.unint and "Interface\\AddOns\\sArena_Reloaded\\Textures\\UI-CastingBar-Uninterruptable" or data.castName == "Penance" and "Interface\\AddOns\\sArena_Reloaded\\Textures\\UI-CastingBar-Filling-Channel" or "Interface\\AddOns\\sArena_Reloaded\\Textures\\UI-CastingBar-Filling-Standard")
+                        frame.CastBar:SetStatusBarTexture(data.unint and "Interface\\AddOns\\sArena_Reloaded\\Textures\\UI-CastingBar-Uninterruptable" or data.channel and "Interface\\AddOns\\sArena_Reloaded\\Textures\\UI-CastingBar-Filling-Channel" or "Interface\\AddOns\\sArena_Reloaded\\Textures\\UI-CastingBar-Filling-Standard")
                     end
                 else
                     local castPath = LSM:Fetch(LSM.MediaType.STATUSBAR, texKeys.castbarStatusBarTexture)

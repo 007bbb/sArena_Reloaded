@@ -2177,10 +2177,80 @@ else
                                             if val then
                                                 info.handler.db.profile.statusText.usePercentage = false
                                             end
-                                            
+
                                             local _, instanceType = IsInInstance()
                                             if (instanceType ~= "arena" and info.handler.arena1:IsShown()) then
                                                 info.handler:Test()
+                                            end
+                                        end,
+                                    },
+                                },
+                            },
+                            darkModeGroup = {
+                                order = 5.5,
+                                name = "Dark Mode",
+                                type = "group",
+                                inline = true,
+                                args = {
+                                    darkMode = {
+                                        order = 1,
+                                        name = "Enable Dark Mode",
+                                        type = "toggle",
+                                        width = 1,
+                                        desc = "Enable Dark Mode for Arena Frames.\n\nIf Better|cff00c0ffBlizz|rFrames is installed it will pick your set Dark Mode color from there.",
+                                        get = function(info) return info.handler.db.profile.darkMode end,
+                                        set = function(info, val)
+                                            info.handler.db.profile.darkMode = val
+                                            info.handler:RefreshConfig()
+                                            info.handler:Test()
+                                        end,
+                                    },
+                                    darkModeValue = {
+                                        order = 2,
+                                        name = "Dark Mode Value",
+                                        type = "range",
+                                        width = 0.75,
+                                        desc = "Set the darkness value for Dark Mode frames (0 = black, 1 = normal brightness).",
+                                        min = 0,
+                                        max = 1,
+                                        step = 0.01,
+                                        hidden = function()
+                                            return BetterBlizzFramesDB and BetterBlizzFramesDB.darkModeUi
+                                        end,
+                                        disabled = function(info)
+                                            return not info.handler.db.profile.darkMode
+                                        end,
+                                        get = function(info) return info.handler.db.profile.darkModeValue end,
+                                        set = function(info, val)
+                                            info.handler.db.profile.darkModeValue = val
+                                            for i = 1, sArenaMixin.maxArenaOpponents do
+                                                local frame = info.handler["arena"..i]
+                                                if frame then
+                                                    frame:DarkModeFrame()
+                                                end
+                                            end
+                                        end,
+                                    },
+                                    darkModeDesaturate = {
+                                        order = 3,
+                                        name = "Desaturate",
+                                        type = "toggle",
+                                        width = 0.75,
+                                        desc = "Remove all color from textures getting dark moded.\n\n|cff888888This is the default behaviour but with some layouts you might prefer to have some original color shine through.|r",
+                                        hidden = function()
+                                            return BetterBlizzFramesDB and BetterBlizzFramesDB.darkModeUi
+                                        end,
+                                        disabled = function(info)
+                                            return not info.handler.db.profile.darkMode
+                                        end,
+                                        get = function(info) return info.handler.db.profile.darkModeDesaturate end,
+                                        set = function(info, val)
+                                            info.handler.db.profile.darkModeDesaturate = val
+                                            for i = 1, sArenaMixin.maxArenaOpponents do
+                                                local frame = info.handler["arena"..i]
+                                                if frame then
+                                                    frame:DarkModeFrame()
+                                                end
                                             end
                                         end,
                                     },
@@ -2192,19 +2262,6 @@ else
                                 type = "group",
                                 inline = true,
                                 args = {
-                                    darkMode = {
-                                        order = 0.5,
-                                        name = "Dark Mode",
-                                        type = "toggle",
-                                        width = "full",
-                                        desc = "Enable Dark Mode for Arena Frames.\n\nIf Better|cff00c0ffBlizz|rFrames is installed it will pick your set Dark Mode color from there.",
-                                        get = function(info) return info.handler.db.profile.darkMode end,
-                                        set = function(info, val)
-                                            info.handler.db.profile.darkMode = val
-                                            info.handler:RefreshConfig()
-                                            info.handler:Test()
-                                        end,
-                                    },
                                     classColors = {
                                         order = 1,
                                         name = "Class Color Frames",

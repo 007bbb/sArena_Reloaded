@@ -13,6 +13,8 @@ sArenaMixin.defaultSettings = {
         showDecimalsClassIcon = true,
         decimalThreshold = 6,
         darkMode = (BetterBlizzFramesDB and BetterBlizzFramesDB.darkModeUi) or C_AddOns.IsAddOnLoaded("FrameColor") or nil,
+        darkModeValue = 0.2,
+        darkModeDesaturate = true,
         statusText = {
             usePercentage = false,
             alwaysShow = true,
@@ -1183,7 +1185,7 @@ function sArenaMixin:DarkModeColor()
     if BetterBlizzFramesDB and BetterBlizzFramesDB.darkModeUi then
         return BetterBlizzFramesDB.darkModeColor
     elseif db.profile.darkMode then
-        return 0.2
+        return db.profile.darkModeValue
     end
 end
 
@@ -1192,6 +1194,7 @@ function sArenaFrameMixin:DarkModeFrame()
 
     local darkModeColor = sArenaMixin:DarkModeColor()
     local lighter = darkModeColor + 0.1
+    local shouldDesaturate = db.profile.darkModeDesaturate
 
     local frameTexture = self.frameTexture
     local specBorder = self.SpecIcon.Border
@@ -1201,23 +1204,23 @@ function sArenaFrameMixin:DarkModeFrame()
 
 
     if frameTexture then
-        frameTexture:SetDesaturated(true)
+        frameTexture:SetDesaturated(shouldDesaturate)
         frameTexture:SetVertexColor(darkModeColor, darkModeColor, darkModeColor)
     end
     if specBorder then
-        specBorder:SetDesaturated(true)
+        specBorder:SetDesaturated(shouldDesaturate)
         specBorder:SetVertexColor(darkModeColor, darkModeColor, darkModeColor)
     end
     if castBorder then
-        castBorder:SetDesaturated(true)
+        castBorder:SetDesaturated(shouldDesaturate)
         castBorder:SetVertexColor(darkModeColor, darkModeColor, darkModeColor)
     end
     if trinketBorder then
-        trinketBorder:SetDesaturated(true)
+        trinketBorder:SetDesaturated(shouldDesaturate)
         trinketBorder:SetVertexColor(lighter, lighter, lighter)
     end
     if racialBorder then
-        racialBorder:SetDesaturated(true)
+        racialBorder:SetDesaturated(shouldDesaturate)
         racialBorder:SetVertexColor(lighter, lighter, lighter)
     end
 

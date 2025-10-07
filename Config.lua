@@ -2201,6 +2201,9 @@ else
                                         get = function(info) return info.handler.db.profile.darkMode end,
                                         set = function(info, val)
                                             info.handler.db.profile.darkMode = val
+                                            if val then
+                                                info.handler.db.profile.classColorFrameTexture = false
+                                            end
                                             info.handler:RefreshConfig()
                                             info.handler:Test()
                                         end,
@@ -2295,6 +2298,9 @@ else
                                         get = function(info) return info.handler.db.profile.classColorFrameTexture end,
                                         set = function(info, val)
                                             info.handler.db.profile.classColorFrameTexture = val
+                                            if val then
+                                                info.handler.db.profile.darkMode = false
+                                            end
                                             for i = 1, sArenaMixin.maxArenaOpponents do
                                                 local frame = info.handler["arena"..i]
                                                 if frame then

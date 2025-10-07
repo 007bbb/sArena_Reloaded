@@ -1271,13 +1271,11 @@ function sArenaFrameMixin:ClassColorFrameTexture()
 end
 
 function sArenaFrameMixin:UpdateFrameColors()
-    -- Priority: Class Color Frame Texture > Dark Mode > Default
     if db.profile.classColorFrameTexture then
         self:ClassColorFrameTexture()
     elseif sArenaMixin:DarkMode() then
         self:DarkModeFrame()
     else
-        -- Reset to default colors
         if self.frameTexture then
             self.frameTexture:SetDesaturated(false)
             self.frameTexture:SetVertexColor(1, 1, 1)
@@ -1919,7 +1917,6 @@ function sArenaFrameMixin:UpdatePlayer(unitEvent, forceUpdate)
         self.HealthBar:SetStatusBarColor(0, 1.0, 0, 1.0)
     end
 
-    self:UpdateFrameColors()
     self:SetAlpha(1)
 end
 
@@ -2006,6 +2003,7 @@ function sArenaFrameMixin:GetClass()
                 self.specTexture = specTexture
                 self.class = class
                 self:UpdateSpecIcon()
+                self:UpdateFrameColors()
             end
         end
 

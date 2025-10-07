@@ -365,22 +365,23 @@ end
 
 function sArenaMixin:CheckClassStacking()
     local classCount = {}
+    local classHasHealer = {}
 
+    -- Count all players by class and track which classes have healers
     for i = 1, self.maxArenaOpponents do
         local frame = _G["sArenaEnemyFrame"..i]
         if frame.class then
             classCount[frame.class] = (classCount[frame.class] or 0) + 1
+            if frame:IsHealer(frame.unit) then
+                classHasHealer[frame.class] = true
+            end
         end
     end
 
+    -- Check if any class has multiple players AND at least one healer
     for class, count in pairs(classCount) do
-        if count > 1 then
-            for i = 1, self.maxArenaOpponents do
-                local frame = _G["sArenaEnemyFrame"..i]
-                if frame:IsHealer(frame.unit) then
-                    return true
-                end
-            end
+        if count > 1 and classHasHealer[class] then
+            return true
         end
     end
 
@@ -1920,7 +1921,7 @@ function sArenaFrameMixin:UpdatePlayer(unitEvent, forceUpdate)
     self:SetAlpha(1)
 end
 
-function sArenaFrameMixin:SetMysteryPlayer(unitEvent)
+function sArenaFrameMixin:SetMysteryPlayer()
     local hp = self.HealthBar
     hp:SetMinMaxValues(0, 100)
     hp:SetValue(100)

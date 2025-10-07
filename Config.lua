@@ -1961,7 +1961,7 @@ local function setDRIcons()
 end
 
 
-local function CompatibilityIssueExists()
+function sArenaMixin:CompatibilityIssueExists()
     -- List of known sArena addon variants that will conflict
     local otherSArenaVersions = {
         "sArena", -- Original
@@ -1981,7 +1981,7 @@ local function CompatibilityIssueExists()
 end
 
 
-if CompatibilityIssueExists() then
+if sArenaMixin:CompatibilityIssueExists() then
     sArenaMixin.optionsTable = {
         type = "group",
         childGroups = "tab",

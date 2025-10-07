@@ -970,9 +970,9 @@ end
 function sArenaMixin:Initialize()
     if (db) then return end
 
-    if C_AddOns.IsAddOnLoaded("sArena") and not db then
+    if self:CompatibilityIssueExists() and not db then
         C_Timer.After(5, function()
-            sArenaMixin:Print("Disable normal sArena to use sArena |cffff8000Reloaded|r |T135884:13:13|t")
+            sArenaMixin:Print("Two different versions of sArena are loaded. Please select how you want to continue by typing /sarena")
         end)
     end
 

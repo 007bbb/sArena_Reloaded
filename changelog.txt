@@ -1,3 +1,7 @@
+2.1.0
+- Fix color trinket setting not showing Cooldown.
+- Color Trinket setting now completely hides Trinket spot when they don't have a Trinket instead of showing a red color.
+
 2.0.9
 - New setting: Class Color FrameTexture. Class color the border on frames.
 - Dark Mode Color Value is now adjustable and also has a Desaturate toggle. (if BetterBlizzFrames is enabled it still gets its value from there to be consistent)

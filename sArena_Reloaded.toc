@@ -1,5 +1,4 @@
 ## Interface: 110205
-## Interface: 110205
 ## Title: sArena |cffff8000Reloaded|r
 ## IconTexture: 135884
 ## Notes: Enhanced Arena Frames

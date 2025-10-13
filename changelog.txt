@@ -1,3 +1,6 @@
+2.1.2
+- Fix test title not going away when hiding test mode.
+
 2.1.1
 - Minor tweaks and bugfixes
 

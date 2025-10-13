@@ -1654,6 +1654,9 @@ function sArenaFrameMixin:OnEvent(event, eventUnit, arg1)
         end
         self:SetAlpha(1)
         self.HealthBar:SetAlpha(1)
+        if TestTitle then
+            TestTitle:Hide()
+        end
     elseif (event == "PLAYER_REGEN_ENABLED") then
         self:UnregisterEvent("PLAYER_REGEN_ENABLED")
         self:UpdateVisible()

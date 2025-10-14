@@ -200,7 +200,6 @@ function layout:Initialize(frame)
 
     local f = frame.Name
     f:SetJustifyH("LEFT")
-    f:SetFontObject("Game10Font_o1")
     f:SetPoint("LEFT", frame.HealthBar, "LEFT", 3, -1)
     f:SetHeight(12)
 

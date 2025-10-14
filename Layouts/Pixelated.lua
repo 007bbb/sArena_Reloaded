@@ -146,76 +146,75 @@ local function CreatePixelTextureBorder(parent, target, key, size, offset)
 end
 
 
-function sArenaMixin:AddPixelBorder()
-    for i = 1, sArenaMixin.maxArenaOpponents do
-        local frame = self["arena" .. i]
-        local size = frame.parent.db.profile.layoutSettings[layoutName].pixelBorderSize or 1.5
-        local drSize = frame.parent.db.profile.layoutSettings[layoutName].drPixelBorderSize or 1.5
-        local offset = frame.parent.db.profile.layoutSettings[layoutName].pixelBorderOffset or 0
+function sArenaFrameMixin:AddPixelBorderToFrame()
+    local size = self.parent.db.profile.layoutSettings[layoutName].pixelBorderSize or 1.5
+    local drSize = self.parent.db.profile.layoutSettings[layoutName].drPixelBorderSize or 1.5
+    local offset = self.parent.db.profile.layoutSettings[layoutName].pixelBorderOffset or 0
 
-        if not frame.PixelBorders then
-            frame.PixelBorders = CreateFrame("Frame", nil, frame)
-            frame.PixelBorders:SetAllPoints()
-            frame.PixelBorders:SetFrameLevel(frame:GetFrameLevel() - 1)
+    if not self.PixelBorders then
+        self.PixelBorders = CreateFrame("Frame", nil, self)
+        self.PixelBorders:SetAllPoints()
+        self.PixelBorders:SetFrameLevel(self:GetFrameLevel() - 1)
+    end
+
+    local borders = self.PixelBorders
+    self.PixelBorders.hide = nil
+
+    if self.HealthBar and self.PowerBar then
+        local wrapper = borders.mainWrapper
+        if not wrapper then
+            wrapper = CreateFrame("Frame", nil, borders)
+            borders.mainWrapper = wrapper
         end
+        wrapper:ClearAllPoints()
+        wrapper:SetPoint("TOPLEFT", self.HealthBar, "TOPLEFT")
+        wrapper:SetPoint("BOTTOMRIGHT", self.PowerBar, "BOTTOMRIGHT")
+        CreatePixelTextureBorder(borders, wrapper, "main", size, offset)
+    end
 
-        local borders = frame.PixelBorders
-        frame.PixelBorders.hide = nil
+    CreatePixelTextureBorder(borders, self.ClassIcon, "classIcon", size, offset)
+    CreatePixelTextureBorder(borders, self.Trinket, "trinket", size, offset)
+    CreatePixelTextureBorder(borders, self.Racial, "racial", size, offset)
+    CreatePixelTextureBorder(borders, self.Dispel, "dispel", size, offset)
 
-        if frame.HealthBar and frame.PowerBar then
-            local wrapper = borders.mainWrapper
-            if not wrapper then
-                wrapper = CreateFrame("Frame", nil, borders)
-                borders.mainWrapper = wrapper
-            end
-            wrapper:ClearAllPoints()
-            wrapper:SetPoint("TOPLEFT", frame.HealthBar, "TOPLEFT")
-            wrapper:SetPoint("BOTTOMRIGHT", frame.PowerBar, "BOTTOMRIGHT")
-            CreatePixelTextureBorder(borders, wrapper, "main", size, offset)
-        end
+    if not self.parent.db.profile.showDispels then
+        borders.dispel:Hide()
+    end
 
-        CreatePixelTextureBorder(borders, frame.ClassIcon, "classIcon", size, offset)
-        CreatePixelTextureBorder(borders, frame.Trinket, "trinket", size, offset)
-        CreatePixelTextureBorder(borders, frame.Racial, "racial", size, offset)
-        CreatePixelTextureBorder(borders, frame.Dispel, "dispel", size, offset)
-        CreatePixelTextureBorder(frame.SpecIcon, frame.SpecIcon, "specIcon", size, offset)
-        CreatePixelTextureBorder(frame.CastBar, frame.CastBar, "castBar", size, offset)
-        CreatePixelTextureBorder(frame.CastBar, frame.CastBar.Icon, "castBarIcon", size, offset)
-        frame:SetTextureCrop(frame.CastBar.Icon, true)
+    CreatePixelTextureBorder(self.SpecIcon, self.SpecIcon, "specIcon", size, offset)
+    CreatePixelTextureBorder(self.CastBar, self.CastBar, "castBar", size, offset)
+    CreatePixelTextureBorder(self.CastBar, self.CastBar.Icon, "castBarIcon", size, offset)
+    self:SetTextureCrop(self.CastBar.Icon, true)
 
-        for n = 1, #self.drCategories do
-            local drFrame = frame[self.drCategories[n]]
-            if drFrame then
-                -- Only apply pixel borders if bright DR borders are disabled
-                if not frame.parent.db.profile.layoutSettings[layoutName].dr.brightDRBorder then
-                    drFrame.Border:Hide()
-                    CreatePixelTextureBorder(drFrame, drFrame, "PixelBorder", drSize, offset)
+    for n = 1, #self.parent.drCategories do
+        local drFrame = self[self.parent.drCategories[n]]
+        if drFrame then
+            if not self.parent.db.profile.layoutSettings[layoutName].dr.brightDRBorder then
+                drFrame.Border:Hide()
+                CreatePixelTextureBorder(drFrame, drFrame, "PixelBorder", drSize, offset)
 
-                    local blackDRBorder = frame.parent.db.profile.layoutSettings[layoutName].dr and frame.parent.db.profile.layoutSettings[layoutName].dr.blackDRBorder
-                    if blackDRBorder then
-                        drFrame.PixelBorder:SetVertexColor(0, 0, 0, 1)
-                    else
-                        if i == 1 then
-                            drFrame.PixelBorder:SetVertexColor(1, 0, 0, 1)
-                        else
-                            drFrame.PixelBorder:SetVertexColor(0, 1, 0, 1)
-                        end
-                    end
+                local blackDRBorder = self.parent.db.profile.layoutSettings[layoutName].dr and self.parent.db.profile.layoutSettings[layoutName].dr.blackDRBorder
+                if blackDRBorder then
+                    drFrame.PixelBorder:SetVertexColor(0, 0, 0, 1)
                 else
-                    -- If bright borders are enabled, make sure pixel border is hidden
-                    if drFrame.PixelBorder then
-                        drFrame.PixelBorder:Hide()
+                    if self:GetID() == 1 then
+                        drFrame.PixelBorder:SetVertexColor(1, 0, 0, 1)
+                    else
+                        drFrame.PixelBorder:SetVertexColor(0, 1, 0, 1)
                     end
-                    -- Show the original border for bright border functionality
-                    if drFrame.Border then
-                        drFrame.Border:Show()
-                    end
+                end
+            else
+                if drFrame.PixelBorder then
+                    drFrame.PixelBorder:Hide()
+                end
+                if drFrame.Border then
+                    drFrame.Border:Show()
                 end
             end
         end
-
-        borders:Show()
     end
+
+    borders:Show()
 end
 
 function sArenaMixin:RemovePixelBorders()
@@ -244,6 +243,7 @@ function sArenaMixin:RemovePixelBorders()
 
         hideBorder(borders, "classIcon")
         hideBorder(borders, "trinket")
+        hideBorder(borders, "dispel")
         hideBorder(borders, "racial")
         hideBorder(frame.SpecIcon, "specIcon")
         hideBorder(frame.CastBar, "castBar")
@@ -385,6 +385,8 @@ function layout:Initialize(frame)
         setupOptionsTable(frame.parent)
     end
 
+    frame:AddPixelBorderToFrame()
+
     if (frame:GetID() == sArenaMixin.maxArenaOpponents) then
         frame.parent:UpdateCastBarSettings(self.db.castBar)
         frame.parent:UpdateDRSettings(self.db.dr)
@@ -393,8 +395,6 @@ function layout:Initialize(frame)
         frame.parent:UpdateTrinketSettings(self.db.trinket)
         frame.parent:UpdateRacialSettings(self.db.racial)
         frame.parent:UpdateDispelSettings(self.db.dispel)
-
-        frame.parent:AddPixelBorder()
 
         for n = 1, #sArenaMixin.drCategories do
             local drFrame = frame[sArenaMixin.drCategories[n]]
@@ -483,7 +483,7 @@ function layout:Initialize(frame)
 
     if not frame.Dispel.DispelPixelBorderHook then
         hooksecurefunc(frame.Dispel.Texture, "SetTexture", function(self, t)
-            if t == nil or t == "" or t == 0 or t == "nil" or frame.parent.db.profile.currentLayout ~= layoutName then
+            if not frame.parent.db.profile.showDispels or t == nil or t == "" or t == 0 or t == "nil" or frame.parent.db.profile.currentLayout ~= layoutName then
                 frame.PixelBorders.dispel:Hide()
             else
                 frame.PixelBorders.dispel:Show()
@@ -492,12 +492,11 @@ function layout:Initialize(frame)
         hooksecurefunc(frame.Dispel, "Hide", function()
             frame.PixelBorders.dispel:Hide()
         end)
-        hooksecurefunc(frame.Dispel, "Show", function()
-            if frame.Dispel.Texture:GetTexture() then
-                frame.PixelBorders.dispel:Show()
-            end
-        end)
         frame.Dispel.DispelPixelBorderHook = true
+    end
+
+    if not frame.parent.db.profile.showDispels then
+        frame.PixelBorders.dispel:Hide()
     end
 
     frame.PowerBar:SetHeight(self.db.powerBarHeight)
@@ -507,7 +506,6 @@ function layout:Initialize(frame)
 
     local f = frame.Name
     f:SetJustifyH("LEFT")
-    f:SetFontObject("Game10Font_o1")
     --f:SetPoint("LEFT", frame.HealthBar, "LEFT", 3, -1)
     f:SetHeight(12)
 

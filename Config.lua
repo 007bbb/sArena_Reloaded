@@ -1767,10 +1767,6 @@ function sArenaMixin:UpdateDRSettings(db, info, val)
         end
     end
 
-    if self.db.profile.currentLayout == "Pixelated" then
-        self:AddPixelBorder()
-    end
-
     self:UpdateGlobalDRSettings()
 end
 
@@ -3326,8 +3322,23 @@ else
                     },
                 },
             },
-            shareProfile = {
+            midnightExpansion = {
                 order = 8,
+                name = "|cffcc66ffMidnight|r |T136221:16:16|t",
+                desc = "World of Warcraft: Midnight plans",
+                type = "group",
+                args = {
+                    description = {
+                        order = 1,
+                        type = "description",
+                        name = "I'm planning to continue developing |cffffffffsArena |cffff8000Reloaded|r |T135884:13:13|t for Midnight as well.\n\nSome features will need to be adjusted or removed but the addon should stick around.\nMidnight is still in early Alpha and I haven't started preparing yet (14th Oct), but I will soon.\n\nPlans might change, but I'm confident |cffffffffsArena |cffff8000Reloaded|r |T135884:13:13|t and my other addons\n|A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rFrames & |A:gmchat-icon-blizz:16:16|aBetter|cff00c0ffBlizz|rPlates will stick around for Midnight (with changes/removals).\n\nI have a lot of work ahead of me, and any support is greatly appreciated. (|cff00c0ff@bodify|r)\nI'll update this section with more detailed information as I know more in some weeks/months.",
+                        fontSize = "medium",
+                        width = "full",
+                    },
+                },
+            },
+            shareProfile = {
+                order = 9,
                 name = "Share Profile",
                 desc = "Export or import a sArena profile",
                 type = "group",

@@ -13,7 +13,7 @@ This version comes packed with many new features such as:
 *   Put a unique texture on Healers specifically, or only when there is Class Stacking.
 *   Show shields and overshields on healthbars.
 *   Hunter's Feign Death does not show up as dead but instead gets faded out a little bit.
-*   Frames are now class colored by default in starting room.
+*   Frames are now class colored by default in starting room (with optional setting to keep default gray).
 *   Castbars immediately hide for easier interrupts and only lingers if an interrupt lands and it will also say who interrupted it on the castbar for a short while.
 *   Shows duration on auras that don't have durations implemented by default from Blizzard (Smoke Bomb, Earthen Wall, Barrier, etc)
 

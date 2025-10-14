@@ -185,7 +185,7 @@ end
 
 function sArenaFrameMixin:GetSharedCD()
     -- Human healers have Will to Survive Shared CD reduced from 90 to 60 sec on Retail.
-    if self.race == "Human" and self.isHealer and isRetail and self.Trinket.spellID == 336126 then
+    if self.race == "Human" and self.isHealer and isRetail and self.Trinket.spellID == sArenaMixin.trinketID then
         return 60
     end
     return racialData[self.race] and racialData[self.race].sharedCD
@@ -223,7 +223,7 @@ function sArenaFrameMixin:FindRacial(spellID)
 		end
 
 		-- Handle shared CD from racial -> trinket (only if not using swapped display)
-		if not self.updateRacialOnTrinketSlot and self.Trinket.spellID == (isRetail and 336126 or 42292) then
+		if not self.updateRacialOnTrinketSlot and self.Trinket.spellID == sArenaMixin.trinketID then
 			local remainingCD = GetRemainingCD(self.Trinket.Cooldown)
 			local sharedCD = self:GetSharedCD()
 

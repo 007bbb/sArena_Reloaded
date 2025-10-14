@@ -1,6 +1,9 @@
 sArenaMixin = {}
 sArenaFrameMixin = {}
 
+local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
+sArenaMixin.isRetail = isRetail
+
 sArenaMixin.layouts = {}
 sArenaMixin.defaultSettings = {
     profile = {
@@ -12,6 +15,7 @@ sArenaMixin.defaultSettings = {
         showDecimalsClassIcon = true,
         decimalThreshold = 6,
         darkMode = (BetterBlizzFramesDB and BetterBlizzFramesDB.darkModeUi) or C_AddOns.IsAddOnLoaded("FrameColor") or nil,
+        forceShowTrinketOnHuman = not isRetail and true or nil,
         darkModeValue = 0.2,
         darkModeDesaturate = true,
         statusText = {
@@ -23,12 +27,11 @@ sArenaMixin.defaultSettings = {
     }
 }
 
-local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
-sArenaMixin.isRetail = isRetail
 sArenaMixin.playerClass = select(2, UnitClass("player"))
 sArenaMixin.maxArenaOpponents = (isRetail and 3) or 5
 sArenaMixin.noTrinketTexture = 638661
 sArenaMixin.trinketTexture = (isRetail and 1322720) or 133453
+sArenaMixin.trinketID = (isRetail and 336126) or 42292
 sArenaMixin.pFont = "Interface\\AddOns\\sArena_Reloaded\\Textures\\Prototype.ttf"
 C_AddOns.EnableAddOn("sArena_Reloaded") -- Make sure users don't get maliciously targeted
 local LSM = LibStub("LibSharedMedia-3.0")
@@ -1532,6 +1535,7 @@ function sArenaFrameMixin:OnEvent(event, eventUnit, arg1)
                     else
                         if not isRetail and self.race == "Human" and db.profile.forceShowTrinketOnHuman then
                             trinketTexture = self:GetFactionTrinketIcon()
+                            self.Trinket.spellID = sArenaMixin.trinketID
                         else
                             trinketTexture = sArenaMixin.noTrinketTexture     -- Surrender flag if no trinket
                         end
@@ -1574,6 +1578,7 @@ function sArenaFrameMixin:OnEvent(event, eventUnit, arg1)
                     end
 
                     if not isRetail and self.race == "Human" and db.profile.forceShowTrinketOnHuman then
+                        self.Trinket.spellID = sArenaMixin.trinketID
                         self.Trinket.Texture:SetTexture(self:GetFactionTrinketIcon())
                         self:UpdateTrinketIcon(true)
                     else
@@ -2180,7 +2185,7 @@ function sArenaFrameMixin:ResetLayout()
     self.ClassIconCooldown:SetUseCircularEdge(false)
     self.ClassIconCooldown:SetSwipeTexture(1)
     self.AuraStacks:SetPoint("BOTTOMLEFT", self.ClassIcon, "BOTTOMLEFT", 2, 0)
-    self.AuraStacks:SetFont("Interface\\AddOns\\sArena_Reloaded\\Textures\\arialn.ttf", 14, "THICKOUTLINE")
+    self.AuraStacks:SetFont("Interface\\AddOns\\sArena_Reloaded\\Textures\\arialn.ttf", 13, "THICKOUTLINE")
 
     self.ClassIcon:RemoveMaskTexture(self.ClassIconMask)
     self.ClassIcon:SetDrawLayer("BORDER", 1)
@@ -2268,6 +2273,8 @@ function sArenaFrameMixin:ResetLayout()
     ResetFontString(f)
     f:SetDrawLayer("ARTWORK", 2)
     f:SetFontObject("SystemFont_Shadow_Small2")
+    f:SetShadowColor(0, 0, 0, 1)
+    f:SetShadowOffset(1, -1)
 
     f = self.SpecNameText
     ResetFontString(f)
@@ -2276,18 +2283,24 @@ function sArenaFrameMixin:ResetLayout()
     local fName, s, o = f:GetFont()
     f:SetFont(fName, s, "THINOUTLINE")
     f:SetScale(1)
+    f:SetShadowColor(0, 0, 0, 1)
+    f:SetShadowOffset(1, -1)
 
     f = self.HealthText
     ResetFontString(f)
     f:SetDrawLayer("ARTWORK", 2)
-    f:SetFontObject("Game10Font_o1")
+    f:SetFontObject("SystemFont_Shadow_Small2")
     f:SetTextColor(1, 1, 1, 1)
+    f:SetShadowColor(0, 0, 0, 1)
+    f:SetShadowOffset(1, -1)
 
     f = self.PowerText
     ResetFontString(f)
     f:SetDrawLayer("ARTWORK", 2)
-    f:SetFontObject("Game10Font_o1")
+    f:SetFontObject("SystemFont_Shadow_Small2")
     f:SetTextColor(1, 1, 1, 1)
+    f:SetShadowColor(0, 0, 0, 1)
+    f:SetShadowOffset(1, -1)
 
     f = self.CastBar
     f.Icon:SetTexCoord(0, 1, 0, 1)
@@ -2339,9 +2352,9 @@ end
 
 function sArenaFrameMixin:SetStatusText(unit)
     if (self.hideStatusText) then
-        self.HealthText:SetFontObject("Game10Font_o1")
+        self.HealthText:SetFontObject("SystemFont_Shadow_Small2")
         self.HealthText:SetText("")
-        self.PowerText:SetFontObject("Game10Font_o1")
+        self.PowerText:SetFontObject("SystemFont_Shadow_Small2")
         self.PowerText:SetText("")
         return
     end

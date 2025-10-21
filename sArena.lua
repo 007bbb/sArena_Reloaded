@@ -1347,9 +1347,8 @@ function sArenaMixin:SetLayout(_, layout)
     self:ModernOrClassicCastbar()
     self:UpdateFonts()
 
-    self.optionsTable.args.layoutSettingsGroup.args = self.layouts[layout].optionsTable and
-        self.layouts[layout].optionsTable or emptyLayoutOptionsTable
-    LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena_Reloaded")
+    self.optionsTable.args.layoutSettingsGroup.args = self.layouts[layout].optionsTable and self.layouts[layout].optionsTable or emptyLayoutOptionsTable
+    LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena")
 
     local _, instanceType = IsInInstance()
     if (instanceType ~= "arena" and self.arena1:IsShown()) then
@@ -1393,7 +1392,7 @@ function sArenaMixin:SetupDrag(frameToClick, frameToMove, settingsTable, updateM
 
             settings.posX, settings.posY = frameX, frameY
             self[updateMethod](self, settings)
-            LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena_Reloaded")
+            LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena")
         end
     end)
 end

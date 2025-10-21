@@ -252,10 +252,8 @@ function sArenaFrameMixin:FindRacial(spellID)
 end
 
 function sArenaFrameMixin:UpdateRacial()
-	if not self.race then
-		self.race = select(2, UnitRace(self.unit))
-	end
-
+	self.race = nil
+	self.race = select(2, UnitRace(self.unit))
 	self.Racial.Texture:SetTexture(nil)
 
 	if (self.race) then
@@ -277,7 +275,7 @@ function sArenaFrameMixin:UpdateRacial()
 				if not self.updateRacialOnTrinketSlot then
 					self.Racial.Texture:SetTexture(racialData[self.race].texture)
 				else
-					if not trinketTexture or trinketTexture == sArenaMixin.noTrinketTexture or (racialData[self.race] and trinketTexture == racialData[self.race].texture) then
+					if not trinketTexture or (trinketTexture == sArenaMixin.noTrinketTexture) or (racialData[self.race] and trinketTexture == racialData[self.race].texture) then
 						self.Racial.Texture:SetTexture(nil)
 
 						if self.parent.db.profile.colorTrinket then

@@ -303,7 +303,7 @@ function layout:UpdateOrientation(frame)
         elseif (txt.healthAnchor or "CENTER") == "RIGHT" then
             healthText:SetPoint("RIGHT", healthBar, "RIGHT", (txt.healthOffsetX or 0), (txt.healthOffsetY or 0))
         else
-            healthText:SetPoint("CENTER", healthBar, "CENTER", (txt.healthOffsetX or 0), (txt.healthOffsetY or 0))
+            healthText:SetPoint("CENTER", healthBar, "CENTER", (txt.healthOffsetX or 0) + 1, (txt.healthOffsetY or 0))
         end
 
         -- Power Text
@@ -313,7 +313,7 @@ function layout:UpdateOrientation(frame)
         elseif (txt.powerAnchor or "CENTER") == "RIGHT" then
             powerText:SetPoint("RIGHT", frame.PowerBar, "RIGHT", 0 + (txt.powerOffsetX or 0), (txt.powerOffsetY or 0))
         else
-            powerText:SetPoint("CENTER", frame.PowerBar, "CENTER", (txt.powerOffsetX or 0), (txt.powerOffsetY or 0))
+            powerText:SetPoint("CENTER", frame.PowerBar, "CENTER", (txt.powerOffsetX or 0) + 1, (txt.powerOffsetY or 0))
         end
 
         -- Spec Text

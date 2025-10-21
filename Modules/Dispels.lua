@@ -147,6 +147,79 @@ else
 end
 
 local detectedDispels = {}
+local dispelStacks = {}
+
+local function updateDispelStacksForFrame(frame)
+	local unit = frame.unit
+	local data = dispelStacks[unit]
+	if not data then
+		if frame.DispelStacks then
+			frame.DispelStacks:SetText("")
+		end
+		return
+	end
+
+	local now = GetTime()
+
+	local newUses = {}
+	for _, u in ipairs(data.uses) do
+		if u.endt > now then
+			table.insert(newUses, u)
+		end
+	end
+	data.uses = newUses
+
+	local maxCharges = 2
+	data.count = maxCharges - #data.uses
+	if data.count < 0 then data.count = 0 end
+
+	if frame.DispelStacks then
+		if data.detected then
+			frame.DispelStacks:SetText(tostring(data.count))
+		else
+			frame.DispelStacks:SetText("")
+		end
+	end
+
+	-- Update desaturation: when dispelStacks is a numeric value (we've detected multi-charge behavior),
+	-- only desaturate when 0 stacks remain. If dispelStacks hasn't detected multi-charge (""),
+	-- fall back to regular behaviour (desaturate whenever a cooldown is active if configured).
+	if frame.Dispel and frame.Dispel.Texture then
+		local db = frame.parent and frame.parent.db
+		local desaturateSetting = db and db.profile and db.profile.desaturateDispelCD
+		if data.detected then
+			-- data.count exists and should be 0/1/2
+			frame.Dispel.Texture:SetDesaturated(desaturateSetting and data.count == 0)
+		else
+			-- No multi-charge detected; keep prior behaviour based on cooldown presence
+			local onCooldown = desaturateSetting and frame.Dispel.Cooldown and frame.Dispel.Cooldown:GetCooldownDuration() > 0
+			frame.Dispel.Texture:SetDesaturated(onCooldown)
+		end
+	end
+
+	-- If there are still uses on cooldown, schedule the next check at the soonest cooldown end
+	if #data.uses > 0 then
+		-- data.uses stores entries with an .end field (absolute time when that charge will be back)
+		local soonest = math.huge
+		for _, u in ipairs(data.uses) do
+			if u.endt < soonest then soonest = u.endt end
+		end
+		-- Update the visual cooldown to show time until the next charge returns
+		if frame.Dispel and frame.Dispel.Cooldown then
+			local timeUntil = math.max(0, soonest - now)
+			frame.Dispel.Cooldown:SetCooldown(now, timeUntil)
+		end
+		local delay = math.max(0, soonest - now) + 0.01
+		C_Timer.After(delay, function()
+			updateDispelStacksForFrame(frame)
+		end)
+	else
+		-- No uses on cooldown: clear the UI cooldown
+		if frame.Dispel and frame.Dispel.Cooldown then
+			frame.Dispel.Cooldown:Clear()
+		end
+	end
+end
 
 function sArenaFrameMixin:FindDispel(spellID)
 	if not sArenaMixin.dispelData[spellID] then return end
@@ -156,10 +229,47 @@ function sArenaFrameMixin:FindDispel(spellID)
 	end
 	detectedDispels[self.unit][spellID] = true
 
+	-- Handle stacks for priest Purify (527) which can have 2 charges via talent.
+	if spellID == 527 then
+		if not dispelStacks[self.unit] then
+			dispelStacks[self.unit] = { detected = false, uses = {}, count = nil }
+		end
+
+		local data = dispelStacks[self.unit]
+		local now = GetTime()
+		local dispelInfo = sArenaMixin.dispelData[spellID]
+		local cooldown = dispelInfo and dispelInfo.cooldown or 8
+
+		local endt
+		if #data.uses == 0 then
+			endt = now + cooldown
+		else
+			local lastEnd = data.uses[#data.uses].endt
+			if lastEnd < now then
+				endt = now + cooldown
+			else
+				endt = lastEnd + cooldown
+			end
+		end
+
+		table.insert(data.uses, { usedAt = now, endt = endt })
+
+		-- If this is the second use that occurs before the first use finished cooldown (based on usedAt), detect the two-use talent
+		if not data.detected and #data.uses >= 2 then
+			local lastUsed = data.uses[#data.uses].usedAt
+			local prevUsed = data.uses[#data.uses - 1].usedAt
+			if lastUsed - prevUsed < cooldown then
+				data.detected = true
+			end
+		end
+
+		updateDispelStacksForFrame(self)
+	end
+
 	local dispelInfo = sArenaMixin.dispelData[spellID]
 	local cooldown = dispelInfo and dispelInfo.cooldown or 8
 
-	--print("5: Setting cooldown for", self.unit, "spellID:", spellID, "duration:", cooldown)
+
 	self.Dispel.Cooldown:SetCooldown(GetTime(), cooldown)
 	self:UpdateDispel()
 end
@@ -339,24 +449,25 @@ function sArenaFrameMixin:UpdateDispel()
 
 	local onCooldown = db.profile.desaturateDispelCD and dispel.Cooldown:GetCooldownDuration() > 0
 	dispel.Texture:SetDesaturated(onCooldown)
+
+	updateDispelStacksForFrame(self)
 end
 
 
 function sArenaMixin:ResetDetectedDispels()
 	wipe(detectedDispels)
+	wipe(dispelStacks)
 end
 
 function sArenaFrameMixin:ResetDispel()
 	local dispel = self.Dispel
-	if not dispel then return end
 
 	dispel.spellID = nil
 	dispel.Texture:SetTexture(nil)
 	dispel.Cooldown:Clear()
+	detectedDispels[self.unit] = nil
+	dispelStacks[self.unit] = nil
+	dispel.Texture:SetDesaturated(false)
 
-	if self.unit then
-		detectedDispels[self.unit] = nil
-	end
-
-	--self:UpdateDispel()
+	self.DispelStacks:SetText("")
 end

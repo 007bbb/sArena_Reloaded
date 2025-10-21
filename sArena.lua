@@ -427,6 +427,11 @@ function sArenaMixin:UpdateFonts()
         if fs and path and fs.SetFont then
             local _, s = fs:GetFont()
             fs:SetFont(path, size, outline)
+            if outline ~= "OUTLINE" and outline ~= "THICKOUTLINE" then
+                fs:SetShadowOffset(1, -1)
+            else
+                fs:SetShadowOffset(0, 0)
+            end
         end
     end
 
@@ -799,7 +804,6 @@ function sArenaMixin:OnEvent(event, ...)
                         --print("4: Dispel registered for", ArenaFrame.unit, "spellID:", spellID)
                         break
                     end
-
                 end
             end
         end
@@ -1503,6 +1507,14 @@ function sArenaFrameMixin:OnLoad()
     self.DispelStacks:SetJustifyH("LEFT")
     self.DispelStacks:SetJustifyV("BOTTOM")
 
+    if not self.Dispel.Overlay then
+        self.Dispel.Overlay = CreateFrame("Frame", nil, self.Dispel)
+        self.Dispel.Overlay:SetFrameStrata("MEDIUM")
+        self.Dispel.Overlay:SetFrameLevel(10)
+    end
+
+    self.DispelStacks:SetParent(self.Dispel.Overlay)
+
     self.TexturePool = CreateTexturePool(self, "ARTWORK", nil, nil, ResetTexture)
 end
 
@@ -1582,6 +1594,7 @@ function sArenaFrameMixin:OnEvent(event, eventUnit, arg1)
                     if shouldPutRacialOnTrinket then
                         self.updateRacialOnTrinketSlot = true
                         self:UpdateRacial()
+                        return
                     else
                         self.updateRacialOnTrinketSlot = nil
                         -- Ensure racial shows in racial slot if it was on trinket before
@@ -2198,7 +2211,7 @@ function sArenaFrameMixin:ResetLayout()
     self.AuraStacks:SetPoint("BOTTOMLEFT", self.ClassIcon, "BOTTOMLEFT", 2, 0)
     self.AuraStacks:SetFont("Interface\\AddOns\\sArena_Reloaded\\Textures\\arialn.ttf", 13, "THICKOUTLINE")
     self.DispelStacks:SetPoint("BOTTOMLEFT", self.Dispel.Texture, "BOTTOMLEFT", 2, 0)
-    self.DispelStacks:SetFont("Interface\\AddOns\\sArena_Reloaded\\Textures\\arialn.ttf", 13, "THICKOUTLINE")
+    self.DispelStacks:SetFont("Interface\\AddOns\\sArena_Reloaded\\Textures\\arialn.ttf", 15, "THICKOUTLINE")
 
     self.ClassIcon:RemoveMaskTexture(self.ClassIconMask)
     self.ClassIcon:SetDrawLayer("BORDER", 1)
@@ -2401,7 +2414,7 @@ end
 function sArenaFrameMixin:UpdateStatusTextVisible()
     self.HealthText:SetShown(db.profile.statusText.alwaysShow)
     self.PowerText:SetShown(db.profile.statusText.alwaysShow)
-    self.PowerText:SetAlpha(db.profile.statusText.hidePowerText and 0 or 1)
+    self.PowerText:SetAlpha(db.profile.hidePowerText and 0 or 1)
 end
 
 local specTemplates = {

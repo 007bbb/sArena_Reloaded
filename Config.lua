@@ -2457,9 +2457,9 @@ else
                                         name = "Hide Power Text",
                                         desc = "Hide mana/rage/energy text",
                                         type = "toggle",
-                                        get = function(info) return info.handler.db.profile.statusText.hidePowerText end,
+                                        get = function(info) return info.handler.db.profile.hidePowerText end,
                                         set = function(info, val)
-                                            info.handler.db.profile.statusText.hidePowerText = val
+                                            info.handler.db.profile.hidePowerText = val
                                             for i = 1, sArenaMixin.maxArenaOpponents do
                                                 info.handler["arena" .. i]:UpdateStatusTextVisible()
                                             end

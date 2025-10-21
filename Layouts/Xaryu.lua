@@ -175,21 +175,20 @@ function layout:Initialize(frame)
     f:SetJustifyV("BOTTOM")
     f:SetFontObject("SystemFont_Shadow_Med3")
     f:SetFont("Fonts\\FRIZQT__.TTF", 14, "")
-    --f:SetPoint("BOTTOMLEFT", frame.HealthBar, "TOPLEFT", 0, 0)
-    --f:SetPoint("BOTTOMRIGHT", frame.HealthBar, "TOPRIGHT", 0, 0)
     f:SetHeight(12)
-    --frame.SpecNameText:SetPoint("LEFT", frame.PowerBar, "LEFT", 3, 0)
 
     f = frame.DeathIcon
     f:ClearAllPoints()
     f:SetPoint("CENTER", frame.HealthBar, "CENTER")
     f:SetSize(self.db.height * 0.8, self.db.height * 0.8)
 
-    --frame.HealthText:SetPoint("CENTER", frame.HealthBar)
-    --frame.HealthText:SetShadowOffset(0, 0)
-
     frame.PowerText:SetPoint("CENTER", frame.PowerBar)
-    --frame.PowerText:SetShadowOffset(0, 0)
+    local fn, fs, fstyle = frame.HealthText:GetFont()
+    frame.HealthText:SetFont(fn, 10, "OUTLINE")
+    local fn, fs, fstyle = frame.HealthText:GetFont()
+    frame.PowerText:SetFont(fn, 10, "OUTLINE")
+    frame.PowerText:SetShadowOffset(0, 0)
+    frame.HealthText:SetShadowOffset(0, 0)
 
     -- Health bar underlay
     if not frame.hpUnderlay then

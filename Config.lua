@@ -2670,6 +2670,7 @@ else
                                                     end
                                                 end
                                             end
+                                            info.handler:Test()
                                         end,
                                     },
                                     colorTrinket = {

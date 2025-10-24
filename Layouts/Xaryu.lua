@@ -107,7 +107,10 @@ local function setSetting(info, val)
         frame.PowerBar:SetHeight(layout.db.powerBarHeight)
         layout:UpdateOrientation(frame)
     end
-    sArenaMixin:RefreshConfig()
+    local setting = info[#info]
+    if (setting ~= "width" and setting ~= "height" and setting ~= "powerBarHeight") then
+        sArenaMixin:RefreshConfig()
+    end
 end
 
 local function setupOptionsTable(self)

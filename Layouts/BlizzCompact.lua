@@ -1,6 +1,6 @@
-local layoutName = "BlizzRetail"
+local layoutName = "BlizzCompact"
 local layout = {}
-layout.name = "|cff00b4ffBlizz|r Retail |A:NewCharacter-Alliance:38:65|a"
+layout.name = "|cff00b4ffBlizz|r Compact |A:NewCharacter-Alliance:38:65|a"
 
 layout.defaultSettings = {
     posX = 400,
@@ -10,48 +10,51 @@ layout.defaultSettings = {
     spacing = 20,
     growthDirection = 1,
     specIcon = {
-        posX = -43,
-        posY = -24,
-        scale = 1,
+        posX = -47.5,
+        posY = -26.5,
+        scale = 0.9,
     },
     trinket = {
-        posX = 116,
-        posY = -6,
+        posX = 121,
+        posY = -2.3,
         scale = 1,
         fontSize = 15,
     },
     racial = {
-        posX = 154,
-        posY = -6,
-        scale = 1,
+        posX = 203,
+        posY = -3,
+        scale = 0.8,
         fontSize = 15,
     },
     dispel = {
-        posX = 192.5,
-        posY = -6,
-        scale = 1,
+        posX = 250,
+        posY = -3,
+        scale = 0.8,
         fontSize = 15,
     },
     castBar = {
-        posX = -141,
-        posY = -10,
-        scale = 1.2,
-        width = 120,
-        iconScale = 1.15,
-        iconPosX = 1,
-        iconPosY = 0,
+        posX = 29.5,
+        posY = -14.5,
+        scale = 1.17,
+        width = 101,
+        iconScale = 0.5,
+        iconPosX = 7,
+        iconPosY = 4.5,
         useModernCastbars = true,
         keepDefaultModernTextures = true,
+        simpleCastbar = true,
+        --hideCastbarIcon = true,
     },
     dr = {
-        posX = -113,
-        posY = 15,
-        size = 29,
+        posX = -105,
+        posY = -2,
+        size = 31,
         borderSize = 1,
         fontSize = 12,
         spacing = 5,
         growthDirection = 4,
         brightDRBorder = true,
+        showDRText = true,
     },
     widgets = {
         combatIndicator = {
@@ -60,16 +63,19 @@ layout.defaultSettings = {
             scale = 1.1,
         },
         targetIndicator = {
+            enabled = true,
             posX = 0,
             posY = 0,
             scale = 1.2,
         },
         focusIndicator = {
+            enabled = true,
             posX = 0,
             posY = 0,
             scale = 1.2,
         },
         partyTargetIndicators = {
+            enabled = true,
             posX = 0,
             posY = 0,
             scale = 1,
@@ -84,14 +90,16 @@ layout.defaultSettings = {
     retextureHealerClassStackOnly = true,
 
     -- custom layout settings
-    frameFont = "Prototype",
-    cdFont  = "Prototype",
+    frameFont = "PT Sans Narrow Bold",
+    cdFont  = "PT Sans Narrow Bold",
+    changeFont = true,
     mirrored = true,
     showSpecManaText = true,
-    hideNameBackground = (BetterBlizzFramesDB and BetterBlizzFramesDB.hideUnitFrameShadow) or nil,
+    replaceClassIcon = true,
 
     textSettings = {
         specNameSize = 0.85,
+        castbarSize = 0.95,
         powerAnchor = "RIGHT",
     },
 }
@@ -109,14 +117,14 @@ local function setSetting(info, val)
     end
 
     if info[#info] == "mirrored" then
-        local expectedPosX = val and (layout.defaultSettings.specIcon.posX + 84) or layout.defaultSettings.specIcon.posX
-        if layout.db.specIcon.posX == expectedPosX then
+        local expectedPosX = val and (layout.defaultSettings.castBar.posX - 41) or layout.defaultSettings.castBar.posX
+        if layout.db.castBar.posX == expectedPosX then
             if val then
-                layout.db.specIcon.posX = layout.db.specIcon.posX - 84
+                layout.db.castBar.posX = layout.db.castBar.posX + 41
             else
-                layout.db.specIcon.posX = layout.db.specIcon.posX + 84
+                layout.db.castBar.posX = layout.db.castBar.posX - 41
             end
-            info.handler:UpdateSpecIconSettings(layout.db.specIcon)
+            info.handler:UpdateCastBarSettings(layout.db.castBar)
         end
     end
 
@@ -138,14 +146,6 @@ local function setupOptionsTable(self)
     layout.optionsTable.arenaFrames.args.other.args.showSpecManaText = {
         order = 3,
         name = "Spec Text on Manabar",
-        type = "toggle",
-        get = getSetting,
-        set = setSetting,
-    }
-
-    layout.optionsTable.arenaFrames.args.other.args.hideNameBackground = {
-        order = 3,
-        name = "Hide Name Background",
         type = "toggle",
         get = getSetting,
         set = setSetting,
@@ -172,9 +172,12 @@ function layout:Initialize(frame)
 
     frame:SetSize(195, 67)
 
+    -- some reused variables
     local healthBar = frame.HealthBar
+    local powerBar = frame.PowerBar
     local f = frame.ClassIcon
 
+    -- text adjustments
     local healthText = frame.HealthText
     healthText:SetJustifyH("CENTER")
     healthText:SetPoint("CENTER", healthBar, "CENTER", 0, 0)
@@ -188,19 +191,47 @@ function layout:Initialize(frame)
     playerName:SetHeight(12)
     playerName:SetDrawLayer("OVERLAY", 6)
 
-    -- portrait icon
-    frame.ClassIconCooldown:SetSwipeTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask")
-    frame.ClassIconCooldown:SetEdgeTexture("Interface\\Cooldown\\edge")
-    frame.ClassIconCooldown:SetUseCircularEdge(true)
-    frame.ClassIcon:SetSize(55, 55)
+    local classIcon = frame.ClassIcon
+    frame.ClassIcon:SetSize(42.5, 42.5)
     frame.ClassIcon:Show()
     frame.ClassIcon:SetTexCoord(0.05, 0.95, 0.1, 0.9)
-    frame.ClassIcon:AddMaskTexture(frame.ClassIconMask)
-    frame.ClassIconMask:ClearAllPoints()
-    frame.ClassIconMask:SetPoint("CENTER", frame.ClassIcon, 0,1)
-    frame.ClassIconMask:SetSize(60, 57)
+    if not classIcon.Border then
+        classIcon.Border = frame:CreateTexture(nil, "ARTWORK", nil, 3)
+    end
+    local classIconBorder = classIcon.Border
+    if not frame.ClassIconMask then
+        frame.ClassIconMask = frame:CreateMaskTexture()
+    end
+    frame.ClassIconMask:SetTexture("Interface\\AddOns\\sArena_Reloaded\\Textures\\talentsmasknodechoiceflyout", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+    frame.ClassIconMask:SetAllPoints(classIcon)
+    classIcon:AddMaskTexture(frame.ClassIconMask)
+    frame.ClassIconCooldown:SetSwipeTexture("Interface\\AddOns\\sArena_Reloaded\\Textures\\talentsmasknodechoiceflyout")
+    if not classIcon.BorderParent then
+        classIcon.BorderParent = CreateFrame("Frame", nil, frame)
+        classIcon.BorderParent:SetFrameStrata("MEDIUM")
+        classIcon.BorderParent:SetFrameLevel(6)
+    end
+    classIconBorder:SetParent(classIcon.BorderParent)
+    classIconBorder:SetAtlas("plunderstorm-actionbar-slot-border")
+    classIconBorder:SetPoint("TOPLEFT", classIcon, "TOPLEFT", -8, 8)
+    classIconBorder:SetPoint("BOTTOMRIGHT", classIcon, "BOTTOMRIGHT", 8, -8)
+    classIconBorder:SetDrawLayer("OVERLAY", 3)
+    classIconBorder:Show()
+    classIcon.Border = classIconBorder
+    classIcon.useModernBorder = true
 
-    -- trinket
+    if not classIcon.ClassIconBorderHook then
+        hooksecurefunc(classIcon, "SetTexture", function(self, t)
+            if t == nil or t == "" or t == 0 or t == "nil" or not self.useModernBorder then
+                classIconBorder:Hide()
+            else
+                classIconBorder:Hide()
+                classIconBorder:Show()
+            end
+        end)
+        classIcon.ClassIconBorderHook = true
+    end
+
     local trinket = frame.Trinket
     if not trinket.Border then
         trinket.Border = frame:CreateTexture(nil, "ARTWORK", nil, 3)
@@ -211,20 +242,19 @@ function layout:Initialize(frame)
     end
     trinket.Mask:SetTexture("Interface\\AddOns\\sArena_Reloaded\\Textures\\talentsmasknodechoiceflyout", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
     trinket.Mask:SetAllPoints(trinket.Texture)
-    trinket.Texture:SetTexCoord(0.03, 0.97, 0.03, 0.97)
     trinket.Texture:AddMaskTexture(trinket.Mask)
     trinket.Cooldown:SetSwipeTexture("Interface\\AddOns\\sArena_Reloaded\\Textures\\talentsmasknodechoiceflyout")
     trinket.Border = trinketBorder
-    trinket:SetSize(32.4, 32.4)
+    trinket:SetSize(42.5, 42.5)
     if not trinket.BorderParent then
         trinket.BorderParent = CreateFrame("Frame", nil, trinket)
         trinket.BorderParent:SetFrameStrata("MEDIUM")
-        trinket.BorderParent:SetFrameLevel(6)
+        trinket.BorderParent:SetFrameLevel(8)
     end
     trinketBorder:SetParent(trinket.BorderParent)
     trinketBorder:SetAtlas("plunderstorm-actionbar-slot-border")
-    trinketBorder:SetPoint("TOPLEFT", trinket, "TOPLEFT", -7, 7)
-    trinketBorder:SetPoint("BOTTOMRIGHT", trinket, "BOTTOMRIGHT", 7, -7)
+    trinketBorder:SetPoint("TOPLEFT", trinket, "TOPLEFT", -8, 8)
+    trinketBorder:SetPoint("BOTTOMRIGHT", trinket, "BOTTOMRIGHT", 8, -8)
     trinketBorder:SetDrawLayer("OVERLAY", 3)
     trinketBorder:Show()
     trinket.Border = trinketBorder
@@ -253,10 +283,10 @@ function layout:Initialize(frame)
     end
     racial.Mask:SetTexture("Interface\\AddOns\\sArena_Reloaded\\Textures\\talentsmasknodechoiceflyout", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
     racial.Mask:SetAllPoints(racial.Texture)
-    racial.Texture:SetTexCoord(0.03, 0.97, 0.03, 0.97)
+    racial.Texture:SetTexCoord(0.03, 0.93, 0.03, 0.93)
     racial.Texture:AddMaskTexture(racial.Mask)
     racial.Cooldown:SetSwipeTexture("Interface\\AddOns\\sArena_Reloaded\\Textures\\talentsmasknodechoiceflyout")
-    racial:SetSize(32.4, 32.4)
+    racial:SetSize(42.5, 42.5)
     if not racial.BorderParent then
         racial.BorderParent = CreateFrame("Frame", nil, racial)
         racial.BorderParent:SetFrameStrata("MEDIUM")
@@ -264,12 +294,13 @@ function layout:Initialize(frame)
     end
     racialBorder:SetParent(racial.BorderParent)
     racialBorder:SetAtlas("plunderstorm-actionbar-slot-border")
-    racialBorder:SetPoint("TOPLEFT", racial, "TOPLEFT", -7, 7)
-    racialBorder:SetPoint("BOTTOMRIGHT", racial, "BOTTOMRIGHT", 7, -7)
+    racialBorder:SetPoint("TOPLEFT", racial, "TOPLEFT", -8, 8)
+    racialBorder:SetPoint("BOTTOMRIGHT", racial, "BOTTOMRIGHT", 8, -8)
     racialBorder:SetDrawLayer("OVERLAY", 3)
     racialBorder:Show()
     racial.Border = racialBorder
     racial.useModernBorder = true
+
     if not racial.RacialBorderHook then
         hooksecurefunc(racial.Texture, "SetTexture", function(self, t)
             if t == nil or t == "" or t == 0 or t == "nil" or not racial.useModernBorder then
@@ -293,9 +324,12 @@ function layout:Initialize(frame)
     end
     dispel.Mask:SetTexture("Interface\\AddOns\\sArena_Reloaded\\Textures\\talentsmasknodechoiceflyout", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
     dispel.Mask:SetAllPoints(dispel.Texture)
+
+    -- Apply the mask
     dispel.Texture:AddMaskTexture(dispel.Mask)
+
     dispel.Cooldown:SetSwipeTexture("Interface\\AddOns\\sArena_Reloaded\\Textures\\talentsmasknodechoiceflyout")
-    dispel:SetSize(32.4, 32.4)
+    dispel:SetSize(42.5, 42.5)
     if not dispel.BorderParent then
         dispel.BorderParent = CreateFrame("Frame", nil, dispel)
         dispel.BorderParent:SetFrameStrata("MEDIUM")
@@ -303,8 +337,8 @@ function layout:Initialize(frame)
     end
     dispelBorder:SetParent(dispel.BorderParent)
     dispelBorder:SetAtlas("plunderstorm-actionbar-slot-border")
-    dispelBorder:SetPoint("TOPLEFT", dispel, "TOPLEFT", -7, 7)
-    dispelBorder:SetPoint("BOTTOMRIGHT", dispel, "BOTTOMRIGHT", 7, -7)
+    dispelBorder:SetPoint("TOPLEFT", dispel, "TOPLEFT", -8, 8)
+    dispelBorder:SetPoint("BOTTOMRIGHT", dispel, "BOTTOMRIGHT", 8, -8)
     dispelBorder:SetDrawLayer("OVERLAY", 3)
     dispelBorder:Show()
     dispel.Border = dispelBorder
@@ -329,7 +363,9 @@ function layout:Initialize(frame)
     if not frame.SpecIcon.Border then
         frame.SpecIcon.Border = frame.SpecIcon:CreateTexture(nil, "ARTWORK", nil, 3)
     end
+
     local specBorder = frame.SpecIcon.Border
+
     frame.SpecIcon:SetSize(20, 20)
     frame.SpecIcon.Texture:AddMaskTexture(frame.SpecIcon.Mask)
     frame.SpecIcon.Texture:SetTexCoord(0.05, 0.95, 0.05, 0.95)
@@ -337,7 +373,10 @@ function layout:Initialize(frame)
     specBorder:SetPoint("TOPLEFT", frame.SpecIcon, "TOPLEFT", -8.5, 8.5)
     specBorder:SetPoint("BOTTOMRIGHT", frame.SpecIcon, "BOTTOMRIGHT", 8, -8)
     specBorder:SetDrawLayer("OVERLAY", 7)
+    specBorder:SetDesaturated(true)
     frame.SpecIcon.Texture:SetDrawLayer("OVERLAY", 6)
+    --specBorder:Hide()
+
     frame.SpecNameText:SetTextColor(1,1,1)
     frame.PowerText:SetAlpha(frame.parent.db.profile.hidePowerText and 0 or 1)
 
@@ -347,6 +386,8 @@ function layout:Initialize(frame)
     f:SetSize(42, 42)
     f:SetDrawLayer("OVERLAY", 7)
 
+
+    -- Health bar underlay
     if not frame.hpUnderlay then
         frame.hpUnderlay = frame:CreateTexture(nil, "BACKGROUND", nil, 1)
         frame.hpUnderlay:SetPoint("TOPLEFT", frame.HealthBar, "TOPLEFT")
@@ -354,6 +395,7 @@ function layout:Initialize(frame)
         frame.hpUnderlay:Show()
     end
 
+    -- Power bar underlay
     if not frame.ppUnderlay then
         frame.ppUnderlay = frame:CreateTexture(nil, "BACKGROUND", nil, 1)
         frame.ppUnderlay:SetPoint("TOPLEFT", frame.PowerBar, "TOPLEFT")
@@ -364,15 +406,11 @@ function layout:Initialize(frame)
     frame.hpUnderlay:SetColorTexture(0, 0, 0, 0.55)
     frame.ppUnderlay:SetColorTexture(0, 0, 0, 0.55)
 
+
     local frameTexture = frame.frameTexture
-    frameTexture:ClearAllPoints()
-    frameTexture:SetAllPoints(frame)
-    if self.db.hideNameBackground then
-        frameTexture:SetTexture("Interface\\AddOns\\sArena_Reloaded\\Textures\\UI-HUD-UnitFrame-Target-PortraitOn-NoShadow.tga")
-    else
-        frameTexture:SetTexture("Interface\\AddOns\\sArena_Reloaded\\Textures\\UI-HUD-UnitFrame-Target-PortraitOn.tga")
-    end
+    frameTexture:SetTexture("Interface\\AddOns\\sArena_Reloaded\\Textures\\UI-HUD-UnitFrame-Player-PortraitOff-Large.tga")
     frameTexture:SetDrawLayer("OVERLAY", 5)
+    frameTexture:SetTexCoord(0, 1, 0, 1)
     frameTexture:Show()
 
     self:UpdateOrientation(frame)
@@ -394,6 +432,7 @@ function layout:UpdateOrientation(frame)
     powerBar:ClearAllPoints()
     classIcon:ClearAllPoints()
     specName:ClearAllPoints()
+    frameTexture:ClearAllPoints()
 
     if self.db.widgets then
         local w = self.db.widgets
@@ -412,8 +451,8 @@ function layout:UpdateOrientation(frame)
             frame.WidgetOverlay.targetIndicator:ClearAllPoints()
             frame.WidgetOverlay.targetIndicator:SetSize(34, 34)
             frame.WidgetOverlay.targetIndicator:SetScale(w.targetIndicator.scale or 1)
-            frame.WidgetOverlay.targetIndicator:SetPoint("CENTER", frame.ClassIcon, "CENTER",
-                (w.targetIndicator.posX or 0) + 33, (w.targetIndicator.posY or 0))
+            frame.WidgetOverlay.targetIndicator:SetPoint("CENTER", healthBar, "TOPLEFT",
+                (w.targetIndicator.posX or 0) + 6.5, (w.targetIndicator.posY or 0) - 6.5)
         end
 
         -- Focus Indicator
@@ -421,8 +460,8 @@ function layout:UpdateOrientation(frame)
             frame.WidgetOverlay.focusIndicator:ClearAllPoints()
             frame.WidgetOverlay.focusIndicator:SetSize(20, 20)
             frame.WidgetOverlay.focusIndicator:SetScale(w.focusIndicator.scale or 1)
-            frame.WidgetOverlay.focusIndicator:SetPoint("BOTTOMRIGHT", frame.ClassIcon, "BOTTOMRIGHT",
-                (w.focusIndicator.posX or 0) + 12, (w.focusIndicator.posY or 0) + 20)
+            frame.WidgetOverlay.focusIndicator:SetPoint("CENTER", healthBar, "TOPLEFT",
+                (w.focusIndicator.posX or 0) - 0.5, (w.focusIndicator.posY or 0) + 0)
         end
 
         -- Party Target Indicators
@@ -431,7 +470,7 @@ function layout:UpdateOrientation(frame)
             frame.WidgetOverlay.partyTarget1:SetSize(15, 15)
             frame.WidgetOverlay.partyTarget1:SetScale(w.partyTargetIndicators.scale or 1)
             frame.WidgetOverlay.partyTarget1:SetPoint("BOTTOMRIGHT", frame.HealthBar, "TOPRIGHT",
-                (w.partyTargetIndicators.posX or 0) + 2, (w.partyTargetIndicators.posY or 0))
+                (w.partyTargetIndicators.posX or 0) + 2, (w.partyTargetIndicators.posY or 0) - 2)
 
             frame.WidgetOverlay.partyTarget2:ClearAllPoints()
             frame.WidgetOverlay.partyTarget2:SetSize(15, 15)
@@ -483,11 +522,11 @@ function layout:UpdateOrientation(frame)
         -- Spec Text
         specName:ClearAllPoints()
         if (txt.specNameAnchor or "CENTER") == "LEFT" then
-            specName:SetPoint("LEFT", healthBar, "LEFT", 4 + (txt.specNameOffsetX or 0), -19.5 + (txt.specNameOffsetY or 0))
+            specName:SetPoint("LEFT", healthBar, "LEFT", 4 + (txt.specNameOffsetX or 0), -23 + (txt.specNameOffsetY or 0))
         elseif (txt.specNameAnchor or "CENTER") == "RIGHT" then
-            specName:SetPoint("RIGHT", healthBar, "RIGHT", -3 + (txt.specNameOffsetX or 0), -19.5 + (txt.specNameOffsetY or 0))
+            specName:SetPoint("RIGHT", healthBar, "RIGHT", -3 + (txt.specNameOffsetX or 0), -23 + (txt.specNameOffsetY or 0))
         else
-            specName:SetPoint("CENTER", healthBar, "CENTER", -1 + (txt.specNameOffsetX or 0), -19.5 + (txt.specNameOffsetY or 0))
+            specName:SetPoint("CENTER", healthBar, "CENTER", -1 + (txt.specNameOffsetX or 0), -23 + (txt.specNameOffsetY or 0))
         end
 
         -- Castbar Text
@@ -503,21 +542,23 @@ function layout:UpdateOrientation(frame)
     end
 
     if (self.db.mirrored) then
-    	frameTexture:SetTexCoord(1, 0, 0, 1)
-        healthBar:SetSize(128, 21)
+        frameTexture:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, -3)
+        frameTexture:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 68, 3)
+        healthBar:SetSize(127, 31)
     	healthBar:GetStatusBarTexture():SetDrawLayer("BORDER", 1)
-    	healthBar:SetPoint("TOPRIGHT", -3, -23)
-        powerBar:SetSize(136, 11)
-        powerBar:SetPoint("TOPLEFT", healthBar, "BOTTOMLEFT", -8, 0)
-        classIcon:SetPoint("TOPLEFT", 8, -4)
+    	healthBar:SetPoint("TOPRIGHT", -4, -16)
+        powerBar:SetSize(127, 10)
+        powerBar:SetPoint("TOPLEFT", healthBar, "BOTTOMLEFT", 0, 1.5)
+        classIcon:SetPoint("TOPLEFT", 15, -14.5)
     else
-    	frameTexture:SetTexCoord(0, 1, 0, 1)
-    	healthBar:SetSize(128, 21)
+    	frameTexture:SetPoint("TOPLEFT", frame, "TOPLEFT", -48, -3)
+        frameTexture:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 20, 3)
+    	healthBar:SetSize(127, 31)
     	healthBar:GetStatusBarTexture():SetDrawLayer("BORDER", 1)
-    	healthBar:SetPoint("TOPLEFT", 3, -23)
-    	powerBar:SetSize(137, 11)
-    	powerBar:SetPoint("TOPLEFT", healthBar, "BOTTOMLEFT", 0, 0)
-    	classIcon:SetPoint("TOPRIGHT", -8, -4)
+    	healthBar:SetPoint("TOPLEFT", 16, -16)
+    	powerBar:SetSize(127, 10)
+    	powerBar:SetPoint("TOPLEFT", healthBar, "BOTTOMLEFT", 0, 1.5)
+    	classIcon:SetPoint("TOPRIGHT", -3, -14.5)
     end
 end
 

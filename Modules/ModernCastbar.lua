@@ -130,6 +130,7 @@ if isRetail then
         local template = templateName or "SmallCastingBarFrameTemplate"
 
         local newBar = CreateFrame("StatusBar", nil, parent, template)
+        newBar:SetMovable(true)
 
         if newBar.OnLoad then
             newBar:OnLoad(nil, true, false)
@@ -310,8 +311,8 @@ else
         bar.Background:SetAllPoints(bar)
         bar.Background:Show()
         bar.Border:ClearAllPoints()
-        bar.Border:SetPoint("TOPLEFT", bar, "TOPLEFT", -1, 1)
-        bar.Border:SetPoint("BOTTOMRIGHT", bar, "BOTTOMRIGHT", 1, -1)
+        bar.Border:SetPoint("TOPLEFT", bar, "TOPLEFT", -1, 1.5)
+        bar.Border:SetPoint("BOTTOMRIGHT", bar, "BOTTOMRIGHT", 1, -1.5)
         bar.Border:Show()
 
         -- Handle simple castbar styling
@@ -344,7 +345,10 @@ else
         castTexture:AddMaskTexture(bar.MaskTexture)
 
         bar:SetHeight(12)
-        if bar.Icon then bar.Icon:SetSize(21, 21) end
+        if bar.Icon then
+            bar.Icon:SetSize(21, 21)
+            bar.Icon:SetDrawLayer("OVERLAY", 7)
+        end
 
         if not bar.__modernHooked then
             -- TODO: Figure out better method for this.

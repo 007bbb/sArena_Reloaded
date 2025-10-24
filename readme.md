@@ -6,8 +6,9 @@ This is a further improvement of my sArena MoP Classic addon and it also brings 
 
 This version comes packed with many new features such as:
 
-*   Three new layouts and one updated one.
+*   Four new layouts and one updated one.
 *   Import/Export feature for Profile Sharing.
+*   Target/Focus/Combat/PartyTargets Indicators.
 *   A smarter aura priority system
 *   Dispel Icon (for Healer dispels by default but also things like Remove Curse & Mending Bandage)
 *   Many new customisation options such as Texture, Font, Dark Mode, Icon Crop, Modern Castbars, Masque support, Text Positions, etc.

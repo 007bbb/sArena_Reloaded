@@ -1,3 +1,17 @@
+2.1.7
+- One new layout: Blizz Compact
+- Four new features in layout settings in new Widgets section:
+1. Target Indicator: Show icon on your current target
+2. Focus Indicator: Show icon on your current focus
+3. Party Target Indicator: Show class colored player icons on arena frames indicating who your party members are targeting.
+4. Combat Indicator: Show food icon on out of combat arena frames.
+- New Hide Castbar Icon setting.
+- Dark mode is no longer enabled by default if BetterBlizzFrames' DarkMode or FrameColor is detected.
+- DR Text setting moved from global to layout settings next to other similar settings.
+- Fix issues with dispel tracker being updated multiple times per one dispell.
+- MoP: Potential fix for Human Racial/Trinket issue on MoP.
+- Misc minor tweaks in gui and layouts.
+
 2.1.6
 - Fix GUI not updating position settings immediately after dragging things around.
 - Fix DR Categories not respecting per spec & per class settings due to falling back to global settings like how Static Icons work, oops.

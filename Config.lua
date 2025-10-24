@@ -769,6 +769,20 @@ function sArenaMixin:GetLayoutOptionsTable(layoutName)
                             end,
                         },
 
+                        hideCastbarIcon = {
+                            order = 2.7,
+                            name = "Hide Castbar Icon",
+                            desc = "Hides the spell icon on the castbar",
+                            type = "toggle",
+                            get = function(info)
+                                return info.handler.db.profile.layoutSettings[layoutName].castBar.hideCastbarIcon
+                            end,
+                            set = function(info, val)
+                                info.handler.db.profile.layoutSettings[layoutName].castBar.hideCastbarIcon = val
+                                info.handler:UpdateCastBarSettings(info.handler.db.profile.layoutSettings[layoutName].castBar, info, val)
+                            end,
+                        },
+
                         spacer = {
                             order = 2.9,
                             type  = "description",
@@ -927,34 +941,56 @@ function sArenaMixin:GetLayoutOptionsTable(layoutName)
                 end
             end,
             args = {
-                brightDRBorder = {
+                options = {
                     order = 0,
-                    name  = "Bright DR Border",
-                    type  = "toggle",
-                    get = function(info)
-                        return info.handler.db.profile.layoutSettings[layoutName].dr.brightDRBorder
-                    end,
-                    set = function(info, val)
-                        local db = info.handler.db.profile.layoutSettings[layoutName].dr
-                        db.brightDRBorder = val
-                        self:UpdateDRSettings(info.handler.db.profile.layoutSettings[layoutName].dr, info, val)
-                    end,
-                },
-                blackDRBorder = {
-                    order = 0.5,
-                    name  = "Black DR Border",
-                    type  = "toggle",
-                    desc  = "Makes DR borders black. Combine this with Global Settings -> DR -> Show DR Text",
-                    get = function(info)
-                        return info.handler.db.profile.layoutSettings[layoutName].dr.blackDRBorder
-                    end,
-                    set = function(info, val)
-                        local db = info.handler.db.profile.layoutSettings[layoutName].dr
-                        db.blackDRBorder = val
-                        self:UpdateDRSettings(info.handler.db.profile.layoutSettings[layoutName].dr, info, val)
-                        info.handler:RefreshConfig()
-                        info.handler:Test()
-                    end,
+                    name = "Options",
+                    type = "group",
+                    inline = true,
+                    args = {
+                        brightDRBorder = {
+                            order = 1,
+                            name  = "Bright DR Border",
+                            type  = "toggle",
+                            get = function(info)
+                                return info.handler.db.profile.layoutSettings[layoutName].dr.brightDRBorder
+                            end,
+                            set = function(info, val)
+                                local db = info.handler.db.profile.layoutSettings[layoutName].dr
+                                db.brightDRBorder = val
+                                self:UpdateDRSettings(info.handler.db.profile.layoutSettings[layoutName].dr, info, val)
+                            end,
+                        },
+                        blackDRBorder = {
+                            order = 2,
+                            name  = "Black DR Border",
+                            type  = "toggle",
+                            desc  = "Makes DR borders black. Combine this with Show DR Text setting",
+                            get = function(info)
+                                return info.handler.db.profile.layoutSettings[layoutName].dr.blackDRBorder
+                            end,
+                            set = function(info, val)
+                                local db = info.handler.db.profile.layoutSettings[layoutName].dr
+                                db.blackDRBorder = val
+                                self:UpdateDRSettings(info.handler.db.profile.layoutSettings[layoutName].dr, info, val)
+                                info.handler:RefreshConfig()
+                                info.handler:Test()
+                            end,
+                        },
+                        showDRText = {
+                            order = 3,
+                            name = "Show DR Text",
+                            desc = "Show text on DR icons displaying the current DR status.",
+                            type = "toggle",
+                            get = function(info)
+                                return info.handler.db.profile.layoutSettings[layoutName].dr.showDRText
+                            end,
+                            set = function(info, val)
+                                local db = info.handler.db.profile.layoutSettings[layoutName].dr
+                                db.showDRText = val
+                                self:UpdateDRSettings(db, info, val)
+                            end,
+                        },
+                    },
                 },
                 positioning = {
                     order = 1,
@@ -1090,6 +1126,387 @@ function sArenaMixin:GetLayoutOptionsTable(layoutName)
             end,
         }
     end
+
+    -- Widgets options
+    optionsTable.widgets = {
+        order = 6.5,
+        name = "Widgets |A:NewCharacter-Alliance:38:65|a",
+        type = "group",
+        get = function(info)
+            local widgets = info.handler.db.profile.layoutSettings[layoutName].widgets
+            local widgetType = info[#info - 1]
+            local setting = info[#info]
+
+            if widgets and widgets[widgetType] then
+                return widgets[widgetType][setting]
+            end
+            return nil
+        end,
+        set = function(info, val)
+            local widgets = info.handler.db.profile.layoutSettings[layoutName].widgets
+            widgets = widgets or {}
+            local widgetType = info[#info - 1]
+            widgets[widgetType] = widgets[widgetType] or {}
+            widgets[widgetType][info[#info]] = val
+
+            info.handler.db.profile.layoutSettings[layoutName].widgets = widgets
+            self:UpdateWidgetSettings(widgets, info, val)
+        end,
+        args = {
+            combatIndicator = {
+                order = 1,
+                name = "Combat Indicator |A:Food:23:23|a",
+                type = "group",
+                inline = true,
+                args = {
+                    enabled = {
+                        order = 1,
+                        name = "Enable Combat Indicator",
+                        desc = "Shows a food icon when the enemy is not in combat",
+                        type = "toggle",
+                        width = "full",
+                        set = function(info, val)
+                            local widgets = info.handler.db.profile.layoutSettings[layoutName].widgets
+                            widgets = widgets or {}
+                            widgets.combatIndicator = widgets.combatIndicator or {}
+                            widgets.combatIndicator.enabled = val
+                            info.handler.db.profile.layoutSettings[layoutName].widgets = widgets
+                            self:UpdateWidgetSettings(widgets, info, val)
+                            info.handler:Test()
+                        end,
+                    },
+                    scale = {
+                        order = 2,
+                        name = "Scale",
+                        type = "range",
+                        min = 0.1,
+                        max = 3.0,
+                        step = 0.01,
+                        bigStep = 0.1,
+                        isPercent = true,
+                        width = 0.95,
+                        disabled = function(info)
+                            local widgets = info.handler.db.profile.layoutSettings[layoutName].widgets
+                            return not (widgets and widgets.combatIndicator and widgets.combatIndicator.enabled)
+                        end,
+                    },
+                    posX = {
+                        order = 3,
+                        name = "Horizontal",
+                        type = "range",
+                        min = -500,
+                        max = 500,
+                        step = 0.1,
+                        bigStep = 1,
+                        width = 0.95,
+                        disabled = function(info)
+                            local widgets = info.handler.db.profile.layoutSettings[layoutName].widgets
+                            return not (widgets and widgets.combatIndicator and widgets.combatIndicator.enabled)
+                        end,
+                    },
+                    posY = {
+                        order = 4,
+                        name = "Vertical",
+                        type = "range",
+                        min = -500,
+                        max = 500,
+                        step = 0.1,
+                        bigStep = 1,
+                        width = 0.95,
+                        disabled = function(info)
+                            local widgets = info.handler.db.profile.layoutSettings[layoutName].widgets
+                            return not (widgets and widgets.combatIndicator and widgets.combatIndicator.enabled)
+                        end,
+                    },
+                    resetCombatIndicator = {
+                        order = 5,
+                        name = "Reset",
+                        width = 0.4,
+                        type = "execute",
+                        func = function(info)
+                            local layout = info.handler.db.profile.layoutSettings[layoutName]
+                            local currentLayout = info.handler.layouts[layoutName]
+                            local defaults = currentLayout.defaultSettings.widgets
+                            layout.widgets = layout.widgets or {}
+                            local currentEnabled = layout.widgets.combatIndicator and layout.widgets.combatIndicator.enabled
+                            layout.widgets.combatIndicator = {
+                                enabled = currentEnabled,
+                                scale = defaults.combatIndicator.scale,
+                                posX = defaults.combatIndicator.posX,
+                                posY = defaults.combatIndicator.posY,
+                            }
+                            self:UpdateWidgetSettings(layout.widgets, info, nil)
+                            LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena")
+                        end,
+                    },
+                },
+            },
+            targetIndicator = {
+                order = 2,
+                name = "Target Indicator |A:TargetCrosshairs:45:45|a",
+                type = "group",
+                inline = true,
+                args = {
+                    enabled = {
+                        order = 1,
+                        name = "Enable Target Indicator",
+                        desc = "Shows an icon on your current target",
+                        type = "toggle",
+                        width = "full",
+                        set = function(info, val)
+                            local widgets = info.handler.db.profile.layoutSettings[layoutName].widgets
+                            widgets = widgets or {}
+                            widgets.targetIndicator = widgets.targetIndicator or {}
+                            widgets.targetIndicator.enabled = val
+                            info.handler.db.profile.layoutSettings[layoutName].widgets = widgets
+                            self:UpdateWidgetSettings(widgets, info, val)
+                            info.handler:Test()
+                        end,
+                    },
+                    scale = {
+                        order = 2,
+                        name = "Scale",
+                        type = "range",
+                        min = 0.1,
+                        max = 3.0,
+                        step = 0.01,
+                        bigStep = 0.1,
+                        isPercent = true,
+                        width = 0.95,
+                        disabled = function(info)
+                            local widgets = info.handler.db.profile.layoutSettings[layoutName].widgets
+                            return not (widgets and widgets.targetIndicator and widgets.targetIndicator.enabled)
+                        end,
+                    },
+                    posX = {
+                        order = 3,
+                        name = "Horizontal",
+                        type = "range",
+                        min = -500,
+                        max = 500,
+                        step = 0.1,
+                        bigStep = 1,
+                        width = 0.95,
+                        disabled = function(info)
+                            local widgets = info.handler.db.profile.layoutSettings[layoutName].widgets
+                            return not (widgets and widgets.targetIndicator and widgets.targetIndicator.enabled)
+                        end,
+                    },
+                    posY = {
+                        order = 4,
+                        name = "Vertical",
+                        type = "range",
+                        min = -500,
+                        max = 500,
+                        step = 0.1,
+                        bigStep = 1,
+                        width = 0.95,
+                        disabled = function(info)
+                            local widgets = info.handler.db.profile.layoutSettings[layoutName].widgets
+                            return not (widgets and widgets.targetIndicator and widgets.targetIndicator.enabled)
+                        end,
+                    },
+                    resetTargetIndicator = {
+                        order = 5,
+                        name = "Reset",
+                        width = 0.4,
+                        type = "execute",
+                        func = function(info)
+                            local layout = info.handler.db.profile.layoutSettings[layoutName]
+                            local currentLayout = info.handler.layouts[layoutName]
+                            local defaults = currentLayout.defaultSettings.widgets
+                            layout.widgets = layout.widgets or {}
+                            local currentEnabled = layout.widgets.targetIndicator and layout.widgets.targetIndicator.enabled
+                            layout.widgets.targetIndicator = {
+                                enabled = currentEnabled,
+                                scale = defaults.targetIndicator.scale,
+                                posX = defaults.targetIndicator.posX,
+                                posY = defaults.targetIndicator.posY,
+                            }
+                            self:UpdateWidgetSettings(layout.widgets, info, nil)
+                            LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena")
+                        end,
+                    },
+                },
+            },
+            focusIndicator = {
+                order = 3,
+                name = "Focus Indicator |TInterface\\AddOns\\sArena_Reloaded\\Textures\\Waypoint-MapPin-Untracked.tga:23:23|t",
+                type = "group",
+                inline = true,
+                args = {
+                    enabled = {
+                        order = 1,
+                        name = "Enable Focus Indicator",
+                        desc = "Shows an icon on your current focus",
+                        type = "toggle",
+                        width = "full",
+                        set = function(info, val)
+                            local widgets = info.handler.db.profile.layoutSettings[layoutName].widgets
+                            widgets = widgets or {}
+                            widgets.focusIndicator = widgets.focusIndicator or {}
+                            widgets.focusIndicator.enabled = val
+                            info.handler.db.profile.layoutSettings[layoutName].widgets = widgets
+                            self:UpdateWidgetSettings(widgets, info, val)
+                            info.handler:Test()
+                        end,
+                    },
+                    scale = {
+                        order = 2,
+                        name = "Scale",
+                        type = "range",
+                        min = 0.1,
+                        max = 3.0,
+                        step = 0.01,
+                        bigStep = 0.1,
+                        isPercent = true,
+                        width = 0.95,
+                        disabled = function(info)
+                            local widgets = info.handler.db.profile.layoutSettings[layoutName].widgets
+                            return not (widgets and widgets.focusIndicator and widgets.focusIndicator.enabled)
+                        end,
+                    },
+                    posX = {
+                        order = 3,
+                        name = "Horizontal",
+                        type = "range",
+                        min = -500,
+                        max = 500,
+                        step = 0.1,
+                        bigStep = 1,
+                        width = 0.95,
+                        disabled = function(info)
+                            local widgets = info.handler.db.profile.layoutSettings[layoutName].widgets
+                            return not (widgets and widgets.focusIndicator and widgets.focusIndicator.enabled)
+                        end,
+                    },
+                    posY = {
+                        order = 4,
+                        name = "Vertical",
+                        type = "range",
+                        min = -500,
+                        max = 500,
+                        step = 0.1,
+                        bigStep = 1,
+                        width = 0.95,
+                        disabled = function(info)
+                            local widgets = info.handler.db.profile.layoutSettings[layoutName].widgets
+                            return not (widgets and widgets.focusIndicator and widgets.focusIndicator.enabled)
+                        end,
+                    },
+                    resetFocusIndicator = {
+                        order = 5,
+                        name = "Reset",
+                        width = 0.4,
+                        type = "execute",
+                        func = function(info)
+                            local layout = info.handler.db.profile.layoutSettings[layoutName]
+                            local currentLayout = info.handler.layouts[layoutName]
+                            local defaults = currentLayout.defaultSettings.widgets
+                            layout.widgets = layout.widgets or {}
+                            local currentEnabled = layout.widgets.focusIndicator and layout.widgets.focusIndicator.enabled
+                            layout.widgets.focusIndicator = {
+                                enabled = currentEnabled,
+                                scale = defaults.focusIndicator.scale,
+                                posX = defaults.focusIndicator.posX,
+                                posY = defaults.focusIndicator.posY,
+                            }
+                            self:UpdateWidgetSettings(layout.widgets, info, nil)
+                            LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena")
+                        end,
+                    },
+                },
+            },
+            partyTargetIndicators = {
+                order = 4,
+                name = "Party Target Indicators |TInterface\\AddOns\\sArena_Reloaded\\Textures\\GM-icon-headCount.tga:19:19|t",
+                type = "group",
+                inline = true,
+                args = {
+                    enabled = {
+                        order = 1,
+                        name = "Enable Party Target Indicators",
+                        desc = "Shows class colored icons on the arena frames that your party members are targeting",
+                        type = "toggle",
+                        width = "full",
+                        set = function(info, val)
+                            local widgets = info.handler.db.profile.layoutSettings[layoutName].widgets
+                            widgets = widgets or {}
+                            widgets.partyTargetIndicators = widgets.partyTargetIndicators or {}
+                            widgets.partyTargetIndicators.enabled = val
+                            info.handler.db.profile.layoutSettings[layoutName].widgets = widgets
+                            self:UpdateWidgetSettings(widgets, info, val)
+                            info.handler:Test()
+                        end,
+                    },
+                    scale = {
+                        order = 2,
+                        name = "Scale",
+                        type = "range",
+                        min = 0.1,
+                        max = 3.0,
+                        step = 0.01,
+                        bigStep = 0.1,
+                        isPercent = true,
+                        width = 0.95,
+                        disabled = function(info)
+                            local widgets = info.handler.db.profile.layoutSettings[layoutName].widgets
+                            return not (widgets and widgets.partyTargetIndicators and widgets.partyTargetIndicators.enabled)
+                        end,
+                    },
+                    posX = {
+                        order = 3,
+                        name = "Horizontal",
+                        type = "range",
+                        min = -500,
+                        max = 500,
+                        step = 0.1,
+                        bigStep = 1,
+                        width = 0.95,
+                        disabled = function(info)
+                            local widgets = info.handler.db.profile.layoutSettings[layoutName].widgets
+                            return not (widgets and widgets.partyTargetIndicators and widgets.partyTargetIndicators.enabled)
+                        end,
+                    },
+                    posY = {
+                        order = 4,
+                        name = "Vertical",
+                        type = "range",
+                        min = -500,
+                        max = 500,
+                        step = 0.1,
+                        bigStep = 1,
+                        width = 0.95,
+                        disabled = function(info)
+                            local widgets = info.handler.db.profile.layoutSettings[layoutName].widgets
+                            return not (widgets and widgets.partyTargetIndicators and widgets.partyTargetIndicators.enabled)
+                        end,
+                    },
+                    resetPartyTargetIndicators = {
+                        order = 5,
+                        name = "Reset",
+                        width = 0.4,
+                        type = "execute",
+                        func = function(info)
+                            local layout = info.handler.db.profile.layoutSettings[layoutName]
+                            local currentLayout = info.handler.layouts[layoutName]
+                            local defaults = currentLayout.defaultSettings.widgets
+                            layout.widgets = layout.widgets or {}
+                            local currentEnabled = layout.widgets.partyTargetIndicators and layout.widgets.partyTargetIndicators.enabled
+                            layout.widgets.partyTargetIndicators = {
+                                enabled = currentEnabled,
+                                scale = defaults.partyTargetIndicators.scale,
+                                posX = defaults.partyTargetIndicators.posX,
+                                posY = defaults.partyTargetIndicators.posY,
+                            }
+                            self:UpdateWidgetSettings(layout.widgets, info, nil)
+                            LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena")
+                        end,
+                    },
+                },
+            },
+        },
+    }
 
     -- Text Settings options
     optionsTable.textSettings = {
@@ -1803,6 +2220,17 @@ function sArenaMixin:UpdateCastBarSettings(db, info, val)
             frame.CastBar.Spark:SetAlpha(1)
         end
 
+        if db.hideCastbarIcon then
+            frame.CastBar.Icon:SetAlpha(0)
+            frame.CastBar.BorderShield:SetAlpha(0)
+        else
+            frame.CastBar.Icon:SetAlpha(1)
+            frame.CastBar.BorderShield:SetAlpha(1)
+        end
+
+        frame.CastBar.Icon:SetDrawLayer("OVERLAY", 7)
+        frame.CastBar.BorderShield:SetDrawLayer("OVERLAY", 6)
+
         frame.CastBar.BorderShield:SetScale(db.iconScale or 1)
         frame.CastBar.Icon:SetScale(db.iconScale or 1)
     end
@@ -1847,6 +2275,24 @@ function sArenaMixin:UpdateDRSettings(db, info, val)
                 sArenaText:SetFont(fontToUse, db.fontSize, "OUTLINE")
             end
 
+            -- Handle DR swipe settings (global setting)
+            local disableSwipeEdge = self.db.profile.disableSwipeEdge
+            local disableDRSwipe = self.db.profile.disableDRSwipe
+            if disableDRSwipe then
+                dr.Cooldown:SetDrawSwipe(false)
+                dr.Cooldown:SetDrawEdge(false)
+            else
+                dr.Cooldown:SetDrawSwipe(true)
+                dr.Cooldown:SetDrawEdge(not disableSwipeEdge)
+            end
+
+            -- Handle DR text visibility (layout-specific setting)
+            if db.showDRText then
+                dr.DRTextFrame:Show()
+            else
+                dr.DRTextFrame:Hide()
+            end
+
             if db.brightDRBorder then
                 if not dr.Mask then
                     dr.Mask = dr:CreateMaskTexture()
@@ -1869,7 +2315,8 @@ function sArenaMixin:UpdateDRSettings(db, info, val)
 
                 if not dr.Boverlay then
                     dr.Boverlay = CreateFrame("Frame", nil, dr)
-                    dr.Boverlay:SetFrameStrata("HIGH")
+                    dr.Boverlay:SetFrameStrata("MEDIUM")
+                    dr.Boverlay:SetFrameLevel(6)
                 end
                 dr.Boverlay:Show()
                 dr.Border:SetParent(dr.Boverlay)
@@ -1895,39 +2342,6 @@ function sArenaMixin:UpdateDRSettings(db, info, val)
                 end
             end
 
-        end
-    end
-
-    self:UpdateGlobalDRSettings()
-end
-
-function sArenaMixin:UpdateGlobalDRSettings()
-    local categories = drCategorieslist
-
-    local drSwipeOff = self.db.profile.drSwipeOff
-    local drTextOn = self.db.profile.drTextOn
-    local disableSwipeEdge = self.db.profile.disableSwipeEdge
-
-    for i = 1, sArenaMixin.maxArenaOpponents do
-        local frame = self["arena" .. i]
-        frame:UpdateDRPositions()
-
-        for n = 1, #categories do
-            local category = categories[n]
-            local dr = frame[category]
-            if drSwipeOff then
-                dr.Cooldown:SetDrawSwipe(false)
-                dr.Cooldown:SetDrawEdge(false)
-            else
-                dr.Cooldown:SetDrawSwipe(true)
-                dr.Cooldown:SetDrawEdge(not disableSwipeEdge)
-            end
-
-            if drTextOn then
-                dr.DRTextFrame:Show()
-            else
-                dr.DRTextFrame:Hide()
-            end
         end
     end
 end
@@ -2021,6 +2435,40 @@ function sArenaMixin:UpdateTextPositions(db, info, val)
 
         if frame and layout and layout.UpdateOrientation then
             layout:UpdateOrientation(frame)
+        end
+    end
+end
+
+function sArenaMixin:UpdateWidgetSettings(db, info, val)
+    if info and val ~= nil then
+        db[info[#info]] = val
+    end
+
+    for i = 1, sArenaMixin.maxArenaOpponents do
+        local frame = self["arena" .. i]
+
+        frame:UnregisterWidgetEvents()
+        frame:RegisterWidgetEvents()
+
+        frame.WidgetOverlay.combatIndicator:SetScale(db.combatIndicator.scale or 1)
+        frame.WidgetOverlay.targetIndicator:SetScale(db.targetIndicator.scale or 1)
+        frame.WidgetOverlay.focusIndicator:SetScale(db.focusIndicator.scale or 1)
+        frame.WidgetOverlay.partyTarget1:SetScale(db.partyTargetIndicators.scale or 1)
+        frame.WidgetOverlay.partyTarget2:SetScale(db.partyTargetIndicators.scale or 1)
+
+        -- Only try to update orientation if called from config (with info parameter)
+        if info and info.handler then
+            local layout = info.handler.layouts[info.handler.db.profile.currentLayout]
+            if frame and layout and layout.UpdateOrientation then
+                layout:UpdateOrientation(frame)
+            end
+        else
+            -- Called from layout Initialize, get current layout directly
+            local currentLayout = self.db.profile.currentLayout
+            local layout = self.layouts[currentLayout]
+            if frame and layout and layout.UpdateOrientation then
+                layout:UpdateOrientation(frame)
+            end
         end
     end
 end
@@ -2758,7 +3206,14 @@ else
                                             for i = 1, sArenaMixin.maxArenaOpponents do
                                                 info.handler["arena" .. i]:UpdateSwipeEdgeSettings()
                                             end
-                                            info.handler:UpdateGlobalDRSettings()
+                                            -- Update DR settings for current layout
+                                            local currentLayout = info.handler.db.profile.currentLayout
+                                            if currentLayout and info.handler.db.profile.layoutSettings[currentLayout] then
+                                                local drSettings = info.handler.db.profile.layoutSettings[currentLayout].dr
+                                                if drSettings then
+                                                    info.handler:UpdateDRSettings(drSettings, info)
+                                                end
+                                            end
                                         end,
                                     },
                                     disableClassIconSwipe = {
@@ -2775,18 +3230,25 @@ else
                                             end
                                         end,
                                     },
-                                    drSwipeOff = {
+                                    disableDRSwipe = {
                                         order = 2,
                                         name = "Disable DR Swipe Animation",
                                         desc = "Disables the spiral cooldown swipe on DR icons.",
                                         type = "toggle",
                                         width = "full",
                                         get = function(info)
-                                            return info.handler.db.profile.drSwipeOff
+                                            return info.handler.db.profile.disableDRSwipe
                                         end,
                                         set = function(info, val)
-                                            info.handler.db.profile.drSwipeOff = val
-                                            info.handler:UpdateGlobalDRSettings()
+                                            info.handler.db.profile.disableDRSwipe = val
+                                            -- Update DR settings for current layout
+                                            local currentLayout = info.handler.db.profile.currentLayout
+                                            if currentLayout and info.handler.db.profile.layoutSettings[currentLayout] then
+                                                local drSettings = info.handler.db.profile.layoutSettings[currentLayout].dr
+                                                if drSettings then
+                                                    info.handler:UpdateDRSettings(drSettings, info)
+                                                end
+                                            end
                                         end,
                                     },
                                     disableTrinketRacialSwipe = {
@@ -2975,20 +3437,6 @@ else
                                             info.handler:UpdateDecimalThreshold()
                                             info.handler:SetupCustomCD()
                                         end
-                                    },
-                                    drTextOn = {
-                                        order = 6,
-                                        name = "Show DR Text",
-                                        desc = "Show text on DR icons displaying the current DR status.",
-                                        type = "toggle",
-                                        width = "full",
-                                        get = function(info)
-                                            return info.handler.db.profile.drTextOn
-                                        end,
-                                        set = function(info, val)
-                                            info.handler.db.profile.drTextOn = val
-                                            info.handler:UpdateGlobalDRSettings()
-                                        end,
                                     },
                                     disableDRBorder = {
                                         order = 5,

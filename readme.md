@@ -47,6 +47,7 @@ You can easily import your other sArena versions just by launching both addons a
 ## New layouts:
 
 ![sArenaNew](https://github.com/user-attachments/assets/3e9b03f0-de58-4862-b866-5b8f2c246164)
+![sArenaCompactLayout](https://github.com/user-attachments/assets/01f58f76-048b-4ed2-87a6-c23f2a03fd1c)
 
 ## Old layouts:
 

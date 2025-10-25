@@ -932,7 +932,6 @@ function sArenaMixin:OnEvent(event, ...)
         self:SetupGrayTrinket()
         self:AddMasqueSupport()
         self:SetupCustomCD()
-        self:SetDRBorderShownStatus()
         if sArena_ReloadedDB.reOpenOptions then
             sArena_ReloadedDB.reOpenOptions = nil
             C_Timer.After(0.5, function()
@@ -1050,6 +1049,15 @@ function sArenaMixin:UpdateCleanups(db)
 
         -- Remove old global setting
         db.profile.disableDRBorder = nil
+    end
+
+    -- Migrate Pixelated layout to use thickPixelBorder setting
+    if db.profile.layoutSettings and db.profile.layoutSettings.Pixelated then
+        local pixelatedDR = db.profile.layoutSettings.Pixelated.dr
+        if pixelatedDR and pixelatedDR.thickPixelBorder == nil then
+            -- Enable thickPixelBorder for existing Pixelated layout users
+            pixelatedDR.thickPixelBorder = true
+        end
     end
 end
 
@@ -1264,28 +1272,6 @@ function sArenaMixin:SetupCustomCD()
     end
 end
 
-function sArenaMixin:SetDRBorderShownStatus()
-    local currentLayout = self.db.profile.currentLayout
-    local layoutSettings = self.db.profile.layoutSettings[currentLayout]
-    local disableDRBorder = layoutSettings and layoutSettings.dr and layoutSettings.dr.disableDRBorder
-
-    for i = 1, sArenaMixin.maxArenaOpponents do
-        local frame = self["arena" .. i]
-        -- DR frames
-        for _, category in ipairs(self.drCategories) do
-            local drFrame = frame[category]
-            if drFrame then
-                if disableDRBorder then
-                    drFrame.Border:Hide()
-                    drFrame.Border.hidden = true
-                elseif drFrame.Border.hidden then
-                    drFrame.Border:Show()
-                    drFrame.Border.hidden = nil
-                end
-            end
-        end
-    end
-end
 
 function sArenaMixin:DarkMode()
     return db.profile.darkMode
@@ -3243,14 +3229,33 @@ function sArenaMixin:Test()
                 drFrame.Cooldown:SetCooldown(currTime, math.random(12, 25))
 
                 local layout = self.db.profile.layoutSettings[self.db.profile.currentLayout]
-                local blackDRBorder = layout.dr and layout.dr.blackDRBorder
+                local db = layout.dr or {}
+                local blackDRBorder = db.blackDRBorder
+
+                if db.disableDRBorder then
+                    drFrame.Border:Hide()
+                    if drFrame.PixelBorder then
+                        drFrame.PixelBorder:Hide()
+                    end
+                elseif db.thickPixelBorder then
+                    drFrame.Border:Hide()
+                    if drFrame.PixelBorder then
+                        drFrame.PixelBorder:Show()
+                    end
+                else
+                    -- Show only normal border (for thinPixelBorder, brightDRBorder, drBorderGlowOff, or default)
+                    drFrame.Border:Show()
+                    if drFrame.PixelBorder then
+                        drFrame.PixelBorder:Hide()
+                    end
+                end
 
                 if (n == 1) then
                     local borderColor = blackDRBorder and {0, 0, 0, 1} or {1, 0, 0, 1}
                     local pixelBorderColor = blackDRBorder and {0, 0, 0, 1} or {1, 0, 0, 1}
                     drFrame.Border:SetVertexColor(unpack(borderColor))
-                    if frame.PixelBorder then
-                        frame.PixelBorder:SetVertexColor(unpack(pixelBorderColor))
+                    if drFrame.PixelBorder then
+                        drFrame.PixelBorder:SetVertexColor(unpack(pixelBorderColor))
                     end
                     drFrame.DRTextFrame.DRText:SetText("%")
                     drFrame.DRTextFrame.DRText:SetTextColor(1, 0, 0)
@@ -3262,8 +3267,8 @@ function sArenaMixin:Test()
                     local borderColor = blackDRBorder and {0, 0, 0, 1} or {0, 1, 0, 1}
                     local pixelBorderColor = blackDRBorder and {0, 0, 0, 1} or {0, 1, 0, 1}
                     drFrame.Border:SetVertexColor(unpack(borderColor))
-                    if frame.PixelBorder then
-                        frame.PixelBorder:SetVertexColor(unpack(pixelBorderColor))
+                    if drFrame.PixelBorder then
+                        drFrame.PixelBorder:SetVertexColor(unpack(pixelBorderColor))
                     end
                     drFrame.DRTextFrame.DRText:SetText("½")
                     drFrame.DRTextFrame.DRText:SetTextColor(0, 1, 0)

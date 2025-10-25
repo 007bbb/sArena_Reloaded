@@ -49,6 +49,7 @@ layout.defaultSettings = {
         fontSize = 12,
         spacing = 7,
         growthDirection = 4,
+        thickPixelBorder = true,
     },
     widgets = {
         combatIndicator = {
@@ -208,34 +209,6 @@ function sArenaFrameMixin:AddPixelBorderToFrame()
     CreatePixelTextureBorder(self.CastBar, self.CastBar, "castBar", size, offset)
     CreatePixelTextureBorder(self.CastBar, self.CastBar.Icon, "castBarIcon", size, offset)
     self:SetTextureCrop(self.CastBar.Icon, true)
-
-    for n = 1, #self.parent.drCategories do
-        local drFrame = self[self.parent.drCategories[n]]
-        if drFrame then
-            if not self.parent.db.profile.layoutSettings[layoutName].dr.brightDRBorder then
-                drFrame.Border:Hide()
-                CreatePixelTextureBorder(drFrame, drFrame, "PixelBorder", drSize, offset)
-
-                local blackDRBorder = self.parent.db.profile.layoutSettings[layoutName].dr and self.parent.db.profile.layoutSettings[layoutName].dr.blackDRBorder
-                if blackDRBorder then
-                    drFrame.PixelBorder:SetVertexColor(0, 0, 0, 1)
-                else
-                    if self:GetID() == 1 then
-                        drFrame.PixelBorder:SetVertexColor(1, 0, 0, 1)
-                    else
-                        drFrame.PixelBorder:SetVertexColor(0, 1, 0, 1)
-                    end
-                end
-            else
-                if drFrame.PixelBorder then
-                    drFrame.PixelBorder:Hide()
-                end
-                if drFrame.Border then
-                    drFrame.Border:Show()
-                end
-            end
-        end
-    end
 
     borders:Show()
 end

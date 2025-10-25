@@ -654,15 +654,26 @@ function sArenaFrameMixin:FindDR(combatEvent, spellID)
 
 	frame.Icon:SetTexture(textureID)
 
-	-- Check if black DR borders are enabled
+	-- Check border settings
 	local layout = self.parent.db.profile.layoutSettings[self.parent.db.profile.currentLayout]
 	local blackDRBorder = layout.dr and layout.dr.blackDRBorder
+	local thickPixelBorder = layout.dr and layout.dr.thickPixelBorder
+	
+	-- Set border colors
 	local borderColor = blackDRBorder and {0, 0, 0, 1} or severityColor[frame.severity]
-	local pixelBorderColor = blackDRBorder and {0, 0, 0, 1} or severityColor[frame.severity]
-
+	
 	frame.Border:SetVertexColor(unpack(borderColor))
     if frame.PixelBorder then
-        frame.PixelBorder:SetVertexColor(unpack(pixelBorderColor))
+		if thickPixelBorder and blackDRBorder then
+			-- Use black for thick pixel borders when blackDRBorder is enabled
+			frame.PixelBorder:SetVertexColor(0, 0, 0, 1)
+		elseif thickPixelBorder then
+			-- Use severity color for thick pixel borders when blackDRBorder is disabled
+			frame.PixelBorder:SetVertexColor(unpack(severityColor[frame.severity]))
+		else
+			-- Use border color for regular pixel borders (fallback)
+			frame.PixelBorder:SetVertexColor(unpack(borderColor))
+		end
     end
     if frame.__MSQ_New_Normal then
         frame.__MSQ_New_Normal:SetDesaturated(true)

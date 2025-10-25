@@ -2320,6 +2320,38 @@ function sArenaMixin:UpdateCastBarSettings(db, info, val)
         frame.CastBar.BorderShield:SetScale(db.iconScale or 1)
         frame.CastBar.Icon:SetScale(db.iconScale or 1)
     end
+
+    self:UpdateCastBarPixelBorders()
+end
+
+function sArenaMixin:UpdateCastBarPixelBorders()
+    local currentLayout = self.db and self.db.profile and self.db.profile.currentLayout
+    local isPixelatedLayout = (currentLayout == "Pixelated")
+    local layoutSettings = self.db and self.db.profile and self.db.profile.layoutSettings and self.db.profile.layoutSettings[currentLayout]
+    local cropIcons = layoutSettings and layoutSettings.cropIcons or false
+
+    for i = 1, sArenaMixin.maxArenaOpponents do
+        local frame = self["arena" .. i]
+
+        if frame.CastBar.castBar then
+            if isPixelatedLayout then
+                frame.CastBar.castBar:Show()
+            else
+                frame.CastBar.castBar:Hide()
+            end
+        end
+
+        if frame.CastBar.castBarIcon then
+            if isPixelatedLayout then
+                frame.CastBar.castBarIcon:Show()
+            else
+                frame.CastBar.castBarIcon:Hide()
+            end
+        end
+
+        local shouldCrop = isPixelatedLayout or cropIcons
+        frame:SetTextureCrop(frame.CastBar.Icon, shouldCrop)
+    end
 end
 
 local function CreatePixelTextureBorder(parent, target, key, size, offset)

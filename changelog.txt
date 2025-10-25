@@ -1,6 +1,10 @@
 2.1.8
+- Add new DR settings and tweak them a bit.
+- New DR Thin Pixel Border setting.
+- New DR Hide Glow setting.
+- Pixelated layout's DR look can now have different looks. Thick Pixel Border is its default but it can now also have Bright DR Border etc.
+- Other layouts than Pixelated can now have the Thick Pixel DR Border / Thin Pixel DR Border setting.
 - Tweak a few aura priorities.
-- Add new "DR Glow Off" setting.
 - Remove Upheaval from Knock DR's.
 - Focus Indicator no longer enabled by default for Blizz Compact layout.
 

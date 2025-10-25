@@ -198,9 +198,6 @@ function layout:Initialize(frame)
         classIcon.Border = frame:CreateTexture(nil, "ARTWORK", nil, 3)
     end
     local classIconBorder = classIcon.Border
-    if not frame.ClassIconMask then
-        frame.ClassIconMask = frame:CreateMaskTexture()
-    end
     frame.ClassIconMask:SetTexture("Interface\\AddOns\\sArena_Reloaded\\Textures\\talentsmasknodechoiceflyout", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
     frame.ClassIconMask:SetAllPoints(classIcon)
     classIcon:AddMaskTexture(frame.ClassIconMask)

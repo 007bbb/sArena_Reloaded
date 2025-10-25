@@ -248,18 +248,24 @@ function sArenaMixin:RemovePixelBorders()
         -- Reset cast bar icon position
         frame.CastBar.Icon:ClearAllPoints()
         frame.CastBar.Icon:SetPoint("RIGHT", frame.CastBar, "LEFT", -5, 0)
+        local newLayout = self.db and self.db.profile and self.db.profile.currentLayout
+        local newLayoutSettings = self.db and self.db.profile and self.db.profile.layoutSettings and self.db.profile.layoutSettings[newLayout]
+        local newCropIcons = newLayoutSettings and newLayoutSettings.cropIcons or false
+        frame:SetTextureCrop(frame.CastBar.Icon, newCropIcons)
 
-        -- Reset DR borders and restore original border texture if needed
         for n = 1, #self.drCategories do
             local drFrame = frame[self.drCategories[n]]
             if drFrame and drFrame.PixelBorder then
                 drFrame.PixelBorder:Hide()
-                -- Always restore the original border when removing pixel borders
                 if drFrame.Border then
                     drFrame.Border:Show()
                 end
             end
         end
+    end
+
+    if self.UpdateCastBarPixelBorders then
+        self:UpdateCastBarPixelBorders()
     end
 end
 
@@ -279,6 +285,7 @@ local function setSetting(info, val)
         frame.PowerBar:SetHeight(layout.db.powerBarHeight)
         layout:UpdateOrientation(frame)
     end
+    
     sArenaMixin:RefreshConfig()
 end
 

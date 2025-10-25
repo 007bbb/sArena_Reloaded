@@ -1475,6 +1475,7 @@ function sArenaMixin:SetLayout(_, layout)
 
     self:ModernOrClassicCastbar()
     self:UpdateFonts()
+    self:UpdateCastBarSettings(self.layoutdb.castBar)
 
     self.optionsTable.args.layoutSettingsGroup.args = self.layouts[layout].optionsTable and self.layouts[layout].optionsTable or emptyLayoutOptionsTable
     LibStub("AceConfigRegistry-3.0"):NotifyChange("sArena")
@@ -2441,6 +2442,7 @@ function sArenaFrameMixin:ResetLayout()
     self.DispelStacks:SetPoint("BOTTOMLEFT", self.Dispel.Texture, "BOTTOMLEFT", 2, 0)
     self.DispelStacks:SetFont("Interface\\AddOns\\sArena_Reloaded\\Textures\\arialn.ttf", 15, "THICKOUTLINE")
 
+    self.ClassIconMask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask")
     self.ClassIcon:RemoveMaskTexture(self.ClassIconMask)
     self.ClassIcon:SetDrawLayer("BORDER", 1)
     if self.frameTexture then

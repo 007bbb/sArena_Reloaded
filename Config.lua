@@ -2477,12 +2477,17 @@ function sArenaMixin:UpdateDRSettings(db, info, val)
                 dr.Border:SetParent(dr)
                 dr.Boverlay:Hide()
             end
-            if dr.Mask and dr.changedDRBorder then
+            if dr.Mask then
                 dr.Icon:RemoveMaskTexture(dr.Mask)
             end
             if dr.PixelBorder then
                 dr.PixelBorder:Hide()
             end
+
+            dr.Border:SetTexture("Interface\\Buttons\\UI-Quickslot-Depress")
+            dr.Border:Show()
+            dr.Icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+            dr.Cooldown:SetSwipeTexture(1)
 
             if db.disableDRBorder then
                 dr.Border:Hide()
@@ -2496,7 +2501,6 @@ function sArenaMixin:UpdateDRSettings(db, info, val)
                 end
                 dr.Border:SetAtlas("communities-create-avatar-border-selected")
                 dr.Icon:SetTexCoord(0.05, 0.95, 0.07, 0.9)
-                dr.changedDRBorder = true
             elseif db.thickPixelBorder then
                 dr.Border:Hide()
                 local drSize = 2
@@ -2512,7 +2516,6 @@ function sArenaMixin:UpdateDRSettings(db, info, val)
                         dr.PixelBorder:SetVertexColor(0, 1, 0, 1)
                     end
                 end
-                dr.changedDRBorder = true
             elseif db.drBorderGlowOff then
                 dr.Border:Show()
                 if dr.PixelBorder then
@@ -2529,7 +2532,6 @@ function sArenaMixin:UpdateDRSettings(db, info, val)
                 dr.Icon:SetDrawLayer("OVERLAY", 7)
                 dr.Icon:SetTexCoord(0.05, 0.95, 0.05, 0.9)
                 dr.Icon:AddMaskTexture(dr.Mask)
-                dr.changedDRBorder = true
             elseif db.brightDRBorder then
                 dr.Border:Show()
                 if dr.PixelBorder then
@@ -2560,21 +2562,7 @@ function sArenaMixin:UpdateDRSettings(db, info, val)
                 end
                 dr.Boverlay:Show()
                 dr.Border:SetParent(dr.Boverlay)
-
-                dr.changedDRBorder = true
-            else
-                dr.Border:Show()
-                if dr.PixelBorder then
-                    dr.PixelBorder:Hide()
-                end
-                if dr.changedDRBorder then
-                    dr.Border:SetTexture("Interface\\Buttons\\UI-Quickslot-Depress")
-                    dr.Icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-                    dr.Cooldown:SetSwipeTexture(1)
-                    dr.changedDRBorder = nil
-                end
             end
-
         end
     end
 end
@@ -3620,15 +3608,16 @@ else
                                     drResetTime = {
                                         order = 1,
                                         name = "DR Reset Time",
-                                        desc =
-                                        "Blizzard no longer uses a dynamic timer for DR resets, it is 18 seconds\n\nBy default sArena has a 0.5 leeway added so a total of 18.5 seconds.",
+                                        desc = isRetail and
+                                        "Blizzard no longer uses a dynamic timer for DR resets, it is 18 seconds\n\nBy default sArena has a 0.5 leeway added so a total of 18.5 seconds." or
+                                        "Blizzard uses a dynamic timer for DR resets, ranging between 15 and 20 seconds.\n\nSetting this to 20 seconds is the safest option, but you can lower it slightly (e.g., 18.5) for more aggressive tracking.",
                                         type = "range",
-                                        min = 18,
+                                        min = isRetail and 18 or 15,
                                         max = 20,
                                         step = 0.1,
                                         width = "normal",
                                         get = function(info)
-                                            return info.handler.db.profile.drResetTime or 18.5
+                                            return info.handler.db.profile.drResetTime or (isRetail and 18.5 or 20)
                                         end,
                                         set = function(info, val)
                                             info.handler.db.profile.drResetTime = val

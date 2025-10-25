@@ -658,10 +658,10 @@ function sArenaFrameMixin:FindDR(combatEvent, spellID)
 	local layout = self.parent.db.profile.layoutSettings[self.parent.db.profile.currentLayout]
 	local blackDRBorder = layout.dr and layout.dr.blackDRBorder
 	local thickPixelBorder = layout.dr and layout.dr.thickPixelBorder
-	
+
 	-- Set border colors
 	local borderColor = blackDRBorder and {0, 0, 0, 1} or severityColor[frame.severity]
-	
+
 	frame.Border:SetVertexColor(unpack(borderColor))
     if frame.PixelBorder then
 		if thickPixelBorder and blackDRBorder then

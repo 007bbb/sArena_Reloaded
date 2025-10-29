@@ -3141,19 +3141,20 @@ else
                                 name = "Dark Mode",
                                 type = "group",
                                 inline = true,
+                                hidden = function(info)
+                                    local layout = info.handler.db.profile.currentLayout
+                                    return layout == "Xaryu" or layout == "Gladiuish" or layout == "Pixelated"
+                                end,
                                 args = {
                                     darkMode = {
                                         order = 1,
                                         name = "Enable Dark Mode",
                                         type = "toggle",
                                         width = 1,
-                                        desc = "Enable Dark Mode for Arena Frames.\n\nIf Better|cff00c0ffBlizz|rFrames is installed it will pick your set Dark Mode color from there.",
+                                        desc = "Enable Dark Mode for Arena Frames.\n\nCan be combined with Class Color FrameTexture. When combined, class colors take priority - use 'Only Class Icon' to apply class color to the icon while Dark Mode colors the rest.",
                                         get = function(info) return info.handler.db.profile.darkMode end,
                                         set = function(info, val)
                                             info.handler.db.profile.darkMode = val
-                                            if val then
-                                                info.handler.db.profile.classColorFrameTexture = false
-                                            end
                                             info.handler:RefreshConfig()
                                             info.handler:Test()
                                         end,
@@ -3167,9 +3168,6 @@ else
                                         min = 0,
                                         max = 1,
                                         step = 0.01,
-                                        hidden = function()
-                                            return BetterBlizzFramesDB and BetterBlizzFramesDB.darkModeUi
-                                        end,
                                         disabled = function(info)
                                             return not info.handler.db.profile.darkMode
                                         end,
@@ -3190,9 +3188,6 @@ else
                                         type = "toggle",
                                         width = 0.75,
                                         desc = "Remove all color from textures getting dark moded.\n\n|cff888888This is the default behaviour but with some layouts you might prefer to have some original color shine through.|r",
-                                        hidden = function()
-                                            return BetterBlizzFramesDB and BetterBlizzFramesDB.darkModeUi
-                                        end,
                                         disabled = function(info)
                                             return not info.handler.db.profile.darkMode
                                         end,
@@ -3244,13 +3239,57 @@ else
                                         name = "Class Color FrameTexture",
                                         desc = "Apply class colors to frame textures (Borders)",
                                         type = "toggle",
-                                        width = "full",
+                                        width = 1.1,
+                                        hidden = function(info)
+                                            local layout = info.handler.db.profile.currentLayout
+                                            return layout == "Xaryu" or layout == "Gladiuish"
+                                        end,
                                         get = function(info) return info.handler.db.profile.classColorFrameTexture end,
                                         set = function(info, val)
                                             info.handler.db.profile.classColorFrameTexture = val
-                                            if val then
-                                                info.handler.db.profile.darkMode = false
+                                            for i = 1, sArenaMixin.maxArenaOpponents do
+                                                local frame = info.handler["arena"..i]
+                                                if frame then
+                                                    frame:UpdateFrameColors()
+                                                end
                                             end
+                                        end,
+                                    },
+                                    classColorFrameTextureOnlyClassIcon = {
+                                        order = 1.06,
+                                        name = "Only Class Icon",
+                                        desc = "Only apply class color to the Class Icon border, not other frame textures",
+                                        type = "toggle",
+                                        width = 0.8,
+                                        hidden = function(info)
+                                            local layout = info.handler.db.profile.currentLayout
+                                            return layout ~= "BlizzCompact"
+                                        end,
+                                        disabled = function(info) return not info.handler.db.profile.classColorFrameTexture end,
+                                        get = function(info) return info.handler.db.profile.classColorFrameTextureOnlyClassIcon end,
+                                        set = function(info, val)
+                                            info.handler.db.profile.classColorFrameTextureOnlyClassIcon = val
+                                            for i = 1, sArenaMixin.maxArenaOpponents do
+                                                local frame = info.handler["arena"..i]
+                                                if frame then
+                                                    frame:UpdateFrameColors()
+                                                end
+                                            end
+                                        end,
+                                    },
+                                    classColorFrameTextureHealerGreen = {
+                                        order = 1.07,
+                                        name = "Color Healer Green",
+                                        desc = "Change healer frames to bright green instead of class color",
+                                        type = "toggle",
+                                        hidden = function(info)
+                                            local layout = info.handler.db.profile.currentLayout
+                                            return layout == "Xaryu" or layout == "Gladiuish"
+                                        end,
+                                        disabled = function(info) return not info.handler.db.profile.classColorFrameTexture end,
+                                        get = function(info) return info.handler.db.profile.classColorFrameTextureHealerGreen end,
+                                        set = function(info, val)
+                                            info.handler.db.profile.classColorFrameTextureHealerGreen = val
                                             for i = 1, sArenaMixin.maxArenaOpponents do
                                                 local frame = info.handler["arena"..i]
                                                 if frame then
@@ -3542,7 +3581,7 @@ else
                                     enableMasque = {
                                         order = 1,
                                         name = "Enable Masque Support",
-                                        desc = "Click to enable Masque support to reskin Icon borders.",
+                                        desc = "Click to enable Masque support to reskin Icon borders.\n\nCurrently this requires you to disable Backdrop in Masque settings for a proper look. I'm not sure if I will make time to improve on this as lots of things will need to be reworked I think.",
                                         type = "toggle",
                                         width = "full",
                                         get = function(info) return info.handler.db.profile.enableMasque end,

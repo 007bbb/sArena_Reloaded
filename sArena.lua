@@ -479,6 +479,13 @@ function sArenaMixin:UpdateTextures()
     -- Store castTexture and keepDefaultTextures for use in ModernCastbar hooks
     self.castTexture = castTexture
     self.keepDefaultModernTextures = keepDefaultModernTextures
+    if sArenaCastingBarExtensionMixin then
+        sArenaCastingBarExtensionMixin.typeInfo = {
+            filling = castTexture,
+            full = castTexture,
+            glow = castTexture
+        }
+    end
 
     for i = 1, self.maxArenaOpponents do
         local frame = _G["sArenaEnemyFrame" .. i]
@@ -1278,11 +1285,7 @@ function sArenaMixin:DarkMode()
 end
 
 function sArenaMixin:DarkModeColor()
-    if BetterBlizzFramesDB and BetterBlizzFramesDB.darkModeUi then
-        return BetterBlizzFramesDB.darkModeColor
-    elseif db.profile.darkMode then
-        return db.profile.darkModeValue
-    end
+    return db.profile.darkModeValue
 end
 
 function sArenaFrameMixin:DarkModeFrame()
@@ -1291,6 +1294,7 @@ function sArenaFrameMixin:DarkModeFrame()
     local darkModeColor = sArenaMixin:DarkModeColor()
     local lighter = darkModeColor + 0.1
     local shouldDesaturate = db.profile.darkModeDesaturate
+    local skipClassIcon = db.profile.classColorFrameTexture
 
     local frameTexture = self.frameTexture
     local specBorder = self.SpecIcon.Border
@@ -1315,7 +1319,7 @@ function sArenaFrameMixin:DarkModeFrame()
             specBorder:SetVertexColor(darkModeColor, darkModeColor, darkModeColor)
         end
     end
-    if classIconBorder then
+    if classIconBorder and not skipClassIcon then
         classIconBorder:SetDesaturated(shouldDesaturate)
         classIconBorder:SetVertexColor(darkModeColor, darkModeColor, darkModeColor)
     end
@@ -1345,11 +1349,19 @@ end
 function sArenaFrameMixin:ClassColorFrameTexture()
     if not db.profile.classColorFrameTexture then return end
 
-    -- Check for real class first, then fallback to tempClass
     local class = self.class or self.tempClass
     local color = RAID_CLASS_COLORS[class]
 
     if not color then return end
+
+    local onlyClassIcon = db.profile.classColorFrameTextureOnlyClassIcon and db.profile.currentLayout == "BlizzCompact"
+    local healerGreen = db.profile.classColorFrameTextureHealerGreen
+    local isHealerGreen = healerGreen and self.isHealer
+
+    local finalColor = color
+    if isHealerGreen then
+        finalColor = { r = 0, g = 1, b = 0 }
+    end
 
     local frameTexture = self.frameTexture
     local specBorder = self.SpecIcon.Border
@@ -1359,42 +1371,144 @@ function sArenaFrameMixin:ClassColorFrameTexture()
     local castBorder = self.CastBar.Border
     local classIconBorder = self.ClassIcon.Border
 
-    if frameTexture then
-        frameTexture:SetDesaturated(true)
-        frameTexture:SetVertexColor(color.r, color.g, color.b)
-    end
-    if specBorder then
-        specBorder:SetDesaturated(true)
-        specBorder:SetVertexColor(color.r, color.g, color.b)
-    end
     if classIconBorder then
         classIconBorder:SetDesaturated(true)
-        classIconBorder:SetVertexColor(color.r, color.g, color.b)
+        classIconBorder:SetVertexColor(finalColor.r, finalColor.g, finalColor.b)
     end
-    if castBorder then
-        castBorder:SetDesaturated(true)
-        castBorder:SetVertexColor(color.r, color.g, color.b)
+
+    if onlyClassIcon then
+        if sArenaMixin:DarkMode() then
+            local darkModeColor = sArenaMixin:DarkModeColor()
+            local lighter = darkModeColor + 0.1
+            local shouldDesaturate = db.profile.darkModeDesaturate
+
+            if frameTexture then
+                frameTexture:SetDesaturated(shouldDesaturate)
+                frameTexture:SetVertexColor(darkModeColor, darkModeColor, darkModeColor)
+            end
+            if specBorder then
+                specBorder:SetDesaturated(shouldDesaturate)
+                if db.profile.currentLayout == "BlizzCompact" then
+                    local darkerCol = darkModeColor - 0.25
+                    specBorder:SetVertexColor(darkerCol, darkerCol, darkerCol)
+                else
+                    specBorder:SetVertexColor(darkModeColor, darkModeColor, darkModeColor)
+                end
+            end
+            if castBorder then
+                castBorder:SetDesaturated(shouldDesaturate)
+                castBorder:SetVertexColor(darkModeColor, darkModeColor, darkModeColor)
+            end
+            if trinketBorder then
+                trinketBorder:SetDesaturated(shouldDesaturate)
+                trinketBorder:SetVertexColor(lighter, lighter, lighter)
+            end
+            if racialBorder then
+                racialBorder:SetDesaturated(shouldDesaturate)
+                racialBorder:SetVertexColor(lighter, lighter, lighter)
+            end
+            if dispelBorder then
+                dispelBorder:SetDesaturated(shouldDesaturate)
+                dispelBorder:SetVertexColor(lighter, lighter, lighter)
+            end
+        end
+    else
+        if frameTexture then
+            frameTexture:SetDesaturated(true)
+            frameTexture:SetVertexColor(finalColor.r, finalColor.g, finalColor.b)
+        end
+        if specBorder then
+            specBorder:SetDesaturated(true)
+            specBorder:SetVertexColor(finalColor.r, finalColor.g, finalColor.b)
+        end
+        if castBorder then
+            castBorder:SetDesaturated(true)
+            castBorder:SetVertexColor(finalColor.r, finalColor.g, finalColor.b)
+        end
+        if trinketBorder then
+            trinketBorder:SetDesaturated(true)
+            local lighter_r = math.min(1, finalColor.r + 0.2)
+            local lighter_g = math.min(1, finalColor.g + 0.2)
+            local lighter_b = math.min(1, finalColor.b + 0.2)
+            trinketBorder:SetVertexColor(lighter_r, lighter_g, lighter_b)
+        end
+        if racialBorder then
+            racialBorder:SetDesaturated(true)
+            local lighter_r = math.min(1, finalColor.r + 0.2)
+            local lighter_g = math.min(1, finalColor.g + 0.2)
+            local lighter_b = math.min(1, finalColor.b + 0.2)
+            racialBorder:SetVertexColor(lighter_r, lighter_g, lighter_b)
+        end
+        if dispelBorder then
+            dispelBorder:SetDesaturated(true)
+            local lighter_r = math.min(1, finalColor.r + 0.2)
+            local lighter_g = math.min(1, finalColor.g + 0.2)
+            local lighter_b = math.min(1, finalColor.b + 0.2)
+            dispelBorder:SetVertexColor(lighter_r, lighter_g, lighter_b)
+        end
     end
-    if trinketBorder then
-        trinketBorder:SetDesaturated(true)
-        local lighter_r = math.min(1, color.r + 0.2)
-        local lighter_g = math.min(1, color.g + 0.2)
-        local lighter_b = math.min(1, color.b + 0.2)
-        trinketBorder:SetVertexColor(lighter_r, lighter_g, lighter_b)
+
+    if self.PixelBorders and db.profile.currentLayout == "Pixelated" then
+        local pixelBorders = self.PixelBorders
+        if pixelBorders.main then
+            pixelBorders.main:SetVertexColor(finalColor.r, finalColor.g, finalColor.b)
+        end
+        if pixelBorders.classIcon then
+            pixelBorders.classIcon:SetVertexColor(finalColor.r, finalColor.g, finalColor.b)
+        end
+        if pixelBorders.trinket then
+            pixelBorders.trinket:SetVertexColor(finalColor.r, finalColor.g, finalColor.b)
+        end
+        if pixelBorders.racial then
+            pixelBorders.racial:SetVertexColor(finalColor.r, finalColor.g, finalColor.b)
+        end
+        if pixelBorders.dispel then
+            pixelBorders.dispel:SetVertexColor(finalColor.r, finalColor.g, finalColor.b)
+        end
+        if self.SpecIcon and self.SpecIcon.specIcon then
+            self.SpecIcon.specIcon:SetVertexColor(finalColor.r, finalColor.g, finalColor.b)
+        end
+        if self.CastBar then
+            if self.CastBar.castBar then
+                self.CastBar.castBar:SetVertexColor(finalColor.r, finalColor.g, finalColor.b)
+            end
+            if self.CastBar.castBarIcon then
+                self.CastBar.castBarIcon:SetVertexColor(finalColor.r, finalColor.g, finalColor.b)
+            end
+        end
     end
-    if racialBorder then
-        racialBorder:SetDesaturated(true)
-        local lighter_r = math.min(1, color.r + 0.2)
-        local lighter_g = math.min(1, color.g + 0.2)
-        local lighter_b = math.min(1, color.b + 0.2)
-        racialBorder:SetVertexColor(lighter_r, lighter_g, lighter_b)
-    end
-    if dispelBorder then
-        dispelBorder:SetDesaturated(true)
-        local lighter_r = math.min(1, color.r + 0.2)
-        local lighter_g = math.min(1, color.g + 0.2)
-        local lighter_b = math.min(1, color.b + 0.2)
-        dispelBorder:SetVertexColor(lighter_r, lighter_g, lighter_b)
+end
+
+function sArenaFrameMixin:ResetPixelBorders()
+    if self.PixelBorders and db.profile.currentLayout == "Pixelated" then
+        local pixelBorders = self.PixelBorders
+
+        if pixelBorders.main then
+            pixelBorders.main:SetVertexColor(0, 0, 0)
+        end
+        if pixelBorders.classIcon then
+            pixelBorders.classIcon:SetVertexColor(0, 0, 0)
+        end
+        if pixelBorders.trinket then
+            pixelBorders.trinket:SetVertexColor(0, 0, 0)
+        end
+        if pixelBorders.racial then
+            pixelBorders.racial:SetVertexColor(0, 0, 0)
+        end
+        if pixelBorders.dispel then
+            pixelBorders.dispel:SetVertexColor(0, 0, 0)
+        end
+        if self.SpecIcon and self.SpecIcon.specIcon then
+            self.SpecIcon.specIcon:SetVertexColor(0, 0, 0)
+        end
+        if self.CastBar then
+            if self.CastBar.castBar then
+                self.CastBar.castBar:SetVertexColor(0, 0, 0)
+            end
+            if self.CastBar.castBarIcon then
+                self.CastBar.castBarIcon:SetVertexColor(0, 0, 0)
+            end
+        end
     end
 end
 
@@ -1403,6 +1517,7 @@ function sArenaFrameMixin:UpdateFrameColors()
         self:ClassColorFrameTexture()
     elseif sArenaMixin:DarkMode() then
         self:DarkModeFrame()
+        self:ResetPixelBorders()
     else
         if self.frameTexture then
             self.frameTexture:SetDesaturated(false)
@@ -1433,6 +1548,7 @@ function sArenaFrameMixin:UpdateFrameColors()
             self.Racial.Border:SetDesaturated(false)
             self.Racial.Border:SetVertexColor(1, 1, 1)
         end
+        self:ResetPixelBorders()
     end
 end
 
@@ -2497,6 +2613,7 @@ function sArenaFrameMixin:ResetLayout()
     local f = self.Trinket
     f:ClearAllPoints()
     f:SetSize(0, 0)
+    f.Cooldown:SetUseCircularEdge(false)
     if f.Mask then
         f.Texture:RemoveMaskTexture(f.Mask)
         f.Cooldown:SetSwipeTexture(1)
@@ -2506,6 +2623,7 @@ function sArenaFrameMixin:ResetLayout()
     local f = self.Dispel
     f:ClearAllPoints()
     f:SetSize(0, 0)
+    f.Cooldown:SetUseCircularEdge(false)
     if f.Mask then
         f.Texture:RemoveMaskTexture(f.Mask)
         f.Cooldown:SetSwipeTexture(1)
@@ -2518,6 +2636,7 @@ function sArenaFrameMixin:ResetLayout()
     f = self.Racial
     f:ClearAllPoints()
     f:SetSize(0, 0)
+    f.Cooldown:SetUseCircularEdge(false)
     if f.Mask then
         f.Texture:RemoveMaskTexture(f.Mask)
         f.Cooldown:SetSwipeTexture(1)

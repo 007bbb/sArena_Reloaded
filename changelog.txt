@@ -1,3 +1,11 @@
+2.2.0
+- Separate Dark Mode color from BetterBlizzFrames' dark mode so you can change it to a different value than the rest of your UI. Your dark mode value might need re-adjusting because of this if you were using BBF dark mode plus sArena dark mode.
+- Add two new options to Class Color FrameTexture: Only color icon borders & Color healer green. This will only show up on layouts supporting it (that have borders on class icon specifically)
+- Class Color FrameTexture now also works on Pixelated layout.
+- Hide some settings in the Global section for layouts where they dont apply (for example dark mode for Xaryu layout, since there are no borders to dark mode)
+- Fix castbar texture change not sticking during arenas on the default castbars.
+- Temporary tweak to MoP's BlizzCompact layout with its cooldown edge texture: use circle edge instead to avoid the edge sticking out on the corners. Not sure how to fix this properly yet on MoP.
+
 2.1.9
 - Fix potential castbar coloring issues with Modern Castbar + Custom texture instead of the default ones.
 - Potential fix for some MoP+Human racial settings. Unable to test cuz no test environment. No PTR, no lvl 90, no skirmishes, gg.

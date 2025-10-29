@@ -1,5 +1,4 @@
 local isRetail = sArenaMixin.isRetail
-local LSM = LibStub("LibSharedMedia-3.0")
 
 local CastStopEvents = {
     UNIT_SPELLCAST_STOP                = true,
@@ -36,7 +35,12 @@ if isRetail then
     function sArenaCastingBarExtensionMixin:GetTypeInfo(barType)
         barType = barType or "standard";
         self:SetStatusBarColor(unpack(actionColors[barType]));
-        return self.typeInfo
+        local currentTexture = sArenaMixin.castTexture or self.typeInfo.filling
+        return {
+            filling = currentTexture,
+            full = currentTexture,
+            glow = currentTexture
+        }
     end
 
     ----------------------------------------

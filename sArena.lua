@@ -476,7 +476,6 @@ function sArenaMixin:UpdateTextures()
     local keepDefaultModernTextures = layout.castBar.keepDefaultModernTextures
     local classStacking = self:CheckClassStacking()
 
-    -- Store castTexture and keepDefaultTextures for use in ModernCastbar hooks
     self.castTexture = castTexture
     self.keepDefaultModernTextures = keepDefaultModernTextures
     if sArenaCastingBarExtensionMixin then

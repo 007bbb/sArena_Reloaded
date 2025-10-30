@@ -3381,8 +3381,20 @@ else
                                             info.handler:Test()
                                         end,
                                     },
-                                    colorTrinket = {
+                                    disableAurasOnClassIcon = {
                                         order = 7,
+                                        name = "Disable Auras on Class Icon",
+                                        type = "toggle",
+                                        width = "full",
+                                        desc = "Do not show any auras on Class Icons instead always show Class/Spec Icon.",
+                                        get = function(info) return info.handler.db.profile.disableAurasOnClassIcon end,
+                                        set = function(info, val)
+                                            info.handler.db.profile.disableAurasOnClassIcon = val
+                                            info.handler:Test()
+                                        end,
+                                    },
+                                    colorTrinket = {
+                                        order = 8,
                                         name = "Color Trinket",
                                         type = "toggle",
                                         width = "full",
@@ -3405,7 +3417,7 @@ else
                                         end,
                                     },
                                     colorMysteryGray = {
-                                        order = 8,
+                                        order = 9,
                                         name = "Color Non-Visible Frames Gray",
                                         type = "toggle",
                                         width = "full",
@@ -3416,7 +3428,7 @@ else
                                         end,
                                     },
                                     showDecimalsClassIcon = {
-                                        order = 9,
+                                        order = 10,
                                         name = "Show Decimals on Class Icon",
                                         desc =
                                         "Show Decimals on Class Icon when duration is below 6 seconds.\n\nOnly for non-OmniCC users.",
@@ -3429,7 +3441,7 @@ else
                                         end
                                     },
                                     decimalThreshold = {
-                                        order = 10,
+                                        order = 11,
                                         name = "Decimal Threshold",
                                         desc = "Show decimals when remaining time is below this threshold. Default is 6 seconds.",
                                         type = "range",

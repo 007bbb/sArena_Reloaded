@@ -14,8 +14,10 @@
     <Script file="sArena.lua"/>
     <Script file="Modules\Racials.lua"/>
     <Script file="Modules\Dispels.lua"/>
+    <Script file="Data\DrList_Retail.lua"/>
     <Script file="Modules\DiminishingReturns.lua"/>
     <Script file="Config.lua"/>
+    <Script file="Data\AuraList_Retail.lua"/>
     <Script file="Modules\Auras.lua"/>
     <Script file="Modules\Trinkets.lua"/>
     <Script file="Modules\ModernCastbar.lua"/>

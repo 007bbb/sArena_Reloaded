@@ -29,6 +29,9 @@ function sArenaMixin:ExportProfile()
 end
 
 function sArenaMixin:ImportProfile(encodedString)
+    -- Trim leading and trailing whitespace
+    encodedString = encodedString:match("^%s*(.-)%s*$")
+
     if not encodedString:match("^!sArena:.+:sArena!$") then
         return nil, "Invalid format."
     end

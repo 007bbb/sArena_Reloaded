@@ -4150,6 +4150,7 @@ function sArenaMixin:CompatibilityIssueExists()
     local otherSArenaVersions = {
         "sArena", -- Original
         "sArena Updated",
+        "sArena_MoP",
         "sArena_Pinaclonada",
         "sArena_Updated2_by_sammers",
     }

@@ -215,8 +215,7 @@ end
 ]]
 function sArenaMixin:ImportOtherForkSettings()
     -- Try to find the saved variables database from other sArena versions
-    -- Priority order: sArena3DB -> sArena2DB -> sArenaDB (oldest to newest naming conventions)
-    local oldDB = sArena3DB or sArena2DB or sArenaDB
+    local oldDB = sArena3DB or sArena2DB or sArenaDB or sArena_MoPDB
 
     -- Validate that we found a valid database with the required structure
     -- Both profileKeys and profiles are essential for AceDB addon profiles
@@ -270,6 +269,7 @@ function sArenaMixin:CompatibilityEnsurer()
     local otherSArenaVersions = {
         "sArena", -- Original
         "sArena Updated",
+        "sArena_MoP",
         "sArena_Pinaclonada",
         "sArena_Updated2_by_sammers",
     }

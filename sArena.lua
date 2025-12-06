@@ -1535,7 +1535,7 @@ function sArenaMixin:CreateCustomCooldown(cooldown, showDecimals)
 
     cooldown:SetHideCountdownNumbers(showDecimals)
 
-    if showDecimals then
+    if showDecimals and not isMidnight then
         cooldown:SetScript("OnUpdate", function()
             local start, duration = cooldown:GetCooldownTimes()
             start, duration = start / 1000, duration / 1000

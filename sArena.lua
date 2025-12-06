@@ -1533,7 +1533,13 @@ function sArenaMixin:CreateCustomCooldown(cooldown, showDecimals)
         text:SetJustifyV("MIDDLE")
     end
 
-    cooldown:SetHideCountdownNumbers(showDecimals)
+    local hideNumbers
+    if isMidnight then
+        hideNumbers = false
+    else
+        hideNumbers = showDecimals
+    end
+    cooldown:SetHideCountdownNumbers(hideNumbers)
 
     if showDecimals and not isMidnight then
         cooldown:SetScript("OnUpdate", function()
@@ -2652,7 +2658,7 @@ function sArenaMixin:AddMasqueSupport()
         -- Add MasqueBorderHook for Trinket
         if not frame.Trinket.MasqueBorderHook then
             hooksecurefunc(frame.Trinket.Texture, "SetTexture", function(self, t)
-                if t == nil or t == "" or t == 0 or t == "nil" then
+                if not t then
                     if frame.TrinketMsq then
                         frame.TrinketMsq:Hide()
                     end
@@ -2669,7 +2675,7 @@ function sArenaMixin:AddMasqueSupport()
         -- Add MasqueBorderHook for Racial
         if not frame.Racial.MasqueBorderHook then
             hooksecurefunc(frame.Racial.Texture, "SetTexture", function(self, t)
-                if t == nil or t == "" or t == 0 or t == "nil" then
+                if not t then
                     if frame.RacialMsq then
                         frame.RacialMsq:Hide()
                     end
@@ -2686,7 +2692,7 @@ function sArenaMixin:AddMasqueSupport()
         -- Add MasqueBorderHook for Dispel
         if not frame.Dispel.MasqueBorderHook then
             hooksecurefunc(frame.Dispel.Texture, "SetTexture", function(self, t)
-                if t == nil or t == "" or t == 0 or t == "nil" then
+                if not t then
                     if frame.DispelMsq then
                         frame.DispelMsq:Hide()
                     end

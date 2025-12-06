@@ -1,3 +1,8 @@
+2.2.6b
+- Midnight: Fix a new "secret" error.
+- Midnight: Fix cooldown numbers on CC.
+- Midnight: Fix red DR Text being out of position.
+
 2.2.6
 - New "DR Text" size and position settings in the Layout: Text Settings section. (The DR amount text, not the cooldown text)
 - "Spec Names on Manabar" setting now available in Layout settings for all layouts and not just a few of them.

@@ -227,7 +227,7 @@ function layout:Initialize(frame)
 
         if not trinket.TrinketCircleBorderHook then
             hooksecurefunc(trinket.Texture, "SetTexture", function(self, t)
-                if t == nil or t == "" or t == 0 or t == "nil" or not sArenaMixin.showTrinketCircleBorder then
+                if not t or not sArenaMixin.showTrinketCircleBorder then
                     trinketCircleBorder:Hide()
                 else
                     trinketCircleBorder:Show()

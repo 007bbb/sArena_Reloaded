@@ -233,7 +233,7 @@ function layout:Initialize(frame)
 
     if not trinket.TrinketBorderHook then
         hooksecurefunc(trinket.Texture, "SetTexture", function(self, t)
-            if t == nil or t == "" or t == 0 or t == "nil" or not trinket.useModernBorder then
+            if not t or not trinket.useModernBorder then
                 trinketBorder:Hide()
             else
                 trinketBorder:Hide()
@@ -273,7 +273,7 @@ function layout:Initialize(frame)
     racial.useModernBorder = true
     if not racial.RacialBorderHook then
         hooksecurefunc(racial.Texture, "SetTexture", function(self, t)
-            if t == nil or t == "" or t == 0 or t == "nil" or not racial.useModernBorder then
+            if not t or not racial.useModernBorder then
                 racialBorder:Hide()
             else
                 racialBorder:Hide()
@@ -313,7 +313,7 @@ function layout:Initialize(frame)
 
     if not dispel.DispelBorderHook then
         hooksecurefunc(dispel.Texture, "SetTexture", function(self, t)
-            if t == nil or t == "" or t == 0 or t == "nil" or not dispel.useModernBorder then
+            if not t or not dispel.useModernBorder then
                 dispelBorder:Hide()
             else
                 dispelBorder:Hide()

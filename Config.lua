@@ -3868,9 +3868,7 @@ function sArenaMixin:UpdateDRTextPositions(db, info, val)
                 end
                 if drFrame and drFrame.DRText2 then
                     drFrame.DRText2:ClearAllPoints()
-                    drFrame.DRText2:SetPoint(db.drTextAnchor or "BOTTOMRIGHT", 
-                        (db.drTextOffsetX or 4), 
-                        (db.drTextOffsetY or -4))
+                    drFrame.DRText2:SetPoint("CENTER", drFrame.DRText, "CENTER", 0, 0)
                     drFrame.DRText2:SetScale(db.drTextSize or 1.0)
                 end
             end

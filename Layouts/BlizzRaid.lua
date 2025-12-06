@@ -538,7 +538,7 @@ function layout:Initialize(frame)
                 return
             end
 
-            if t == nil or t == "" or t == 0 or t == "nil" then
+            if not t then
                 frame.PixelBorders.trinket:Hide()
             else
                 frame.PixelBorders.trinket:Show()
@@ -571,7 +571,7 @@ function layout:Initialize(frame)
 
     if not frame.Racial.RacialPixelBorderHook then
         hooksecurefunc(frame.Racial.Texture, "SetTexture", function(self, t)
-            if t == nil or t == "" or t == 0 or t == "nil" or not sArenaMixin.showPixelBorder then
+            if not t or not sArenaMixin.showPixelBorder then
                 frame.PixelBorders.racial:Hide()
             else
                 frame.PixelBorders.racial:Show()
@@ -582,7 +582,7 @@ function layout:Initialize(frame)
 
     if not frame.Dispel.DispelPixelBorderHook then
         hooksecurefunc(frame.Dispel.Texture, "SetTexture", function(self, t)
-            if not frame.parent.db.profile.showDispels or t == nil or t == "" or t == 0 or t == "nil" or not sArenaMixin.showPixelBorder then
+            if not frame.parent.db.profile.showDispels or not t or not sArenaMixin.showPixelBorder then
                 frame.PixelBorders.dispel:Hide()
             else
                 frame.PixelBorders.dispel:Show()
@@ -600,7 +600,7 @@ function layout:Initialize(frame)
 
     if not frame.ClassIcon.ClassIconPixelBorderHook then
         hooksecurefunc(frame.ClassIcon, "SetTexture", function(self, t)
-            if t == nil or t == "" or t == 0 or t == "nil" or not sArenaMixin.showPixelBorder then
+            if not t or not sArenaMixin.showPixelBorder then
                 frame.PixelBorders.classIcon:Hide()
             else
                 frame.PixelBorders.classIcon:Show()

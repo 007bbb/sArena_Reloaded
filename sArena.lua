@@ -184,6 +184,11 @@ local FEIGN_DEATH = GetSpellName(feignDeathID) -- Localized name for Feign Death
 
 local BlizzardUnitIsUnit = UnitIsUnit
 
+local nonSecretUnits = {
+    ["target"] = true,
+    ["focus"] = true,
+}
+
 local function MidnightUnitIsUnit(unit1, unit2)
     local p1 = C_NamePlate.GetNamePlateForUnit(unit1, issecure())
     local p2 = C_NamePlate.GetNamePlateForUnit(unit2, issecure())
@@ -192,6 +197,9 @@ end
 
 local function UnitIsUnit(unit1, unit2)
     if isMidnight then
+        if nonSecretUnits[unit1] or nonSecretUnits[unit2] then
+            return BlizzardUnitIsUnit(unit1, unit2)
+        end
         return MidnightUnitIsUnit(unit1, unit2)
     else
         return BlizzardUnitIsUnit(unit1, unit2)
@@ -2155,20 +2163,20 @@ function sArenaFrameMixin:OnLoad()
             end)
         end
 
-        local ogOverabsorb = blizzArenaFrame.overAbsorbGlow
-        ogOverabsorb:ClearAllPoints()
-        ogOverabsorb:SetPoint("TOP", healthBar, "TOPRIGHT", 0, 0)
-        ogOverabsorb:SetPoint("BOTTOM", healthBar, "BOTTOMRIGHT", 0, 0)
-        ogOverabsorb:SetParent(healthBar)
-        ogOverabsorb:Hide()
-        hooksecurefunc(ogOverabsorb, "SetPoint", function(self)
-            if self.changing then return end
-            self.changing = true
-            self:ClearAllPoints()
-            self:SetPoint("TOP", healthBar, "TOPRIGHT", 0, 0)
-            self:SetPoint("BOTTOM", healthBar, "BOTTOMRIGHT", 0, 0)
-            self.changing = false
-        end)
+        -- local ogOverabsorb = blizzArenaFrame.overAbsorbGlow
+        -- ogOverabsorb:ClearAllPoints()
+        -- ogOverabsorb:SetPoint("TOP", healthBar, "TOPRIGHT", 0, 0)
+        -- ogOverabsorb:SetPoint("BOTTOM", healthBar, "BOTTOMRIGHT", 0, 0)
+        -- ogOverabsorb:SetParent(healthBar)
+        -- ogOverabsorb:Hide()
+        -- hooksecurefunc(ogOverabsorb, "SetPoint", function(self)
+        --     if self.changing then return end
+        --     self.changing = true
+        --     self:ClearAllPoints()
+        --     self:SetPoint("TOP", healthBar, "TOPRIGHT", 0, 0)
+        --     self:SetPoint("BOTTOM", healthBar, "BOTTOMRIGHT", 0, 0)
+        --     self.changing = false
+        -- end)
     end
 
     self:RegisterEvent("PLAYER_LOGIN")

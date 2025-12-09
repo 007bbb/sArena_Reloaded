@@ -3429,6 +3429,7 @@ local specTemplates = {
 
 local testPlayers = {
     { template = "BM_HUNTER", name = "Despytimes" },
+    { template = "BM_HUNTER", name = "Littlejimmy", racial = 20589, race = "Gnome" },
     { template = "MM_HUNTER", name = "Jellybeans" },
     { template = "SURV_HUNTER", name = "Bicmex" },
     { template = "ELE_SHAMAN", name = "Bluecheese" },
@@ -3440,6 +3441,7 @@ local testPlayers = {
     { template = "ELE_SHAMAN", name = "Whaazzlasso", castName = "Feet Up", castIcon = 133029 },
     { template = "RESTO_DRUID", name = "Metaphors" },
     { template = "RESTO_DRUID", name = "Flop" },
+    { template = "RESTO_DRUID", name = "Rennar" },
     { template = "FERAL_DRUID", name = "Sodapoopin" },
     { template = "FERAL_DRUID", name = "Bean" },
     { template = "FERAL_DRUID", name = "Snupy" },
@@ -3463,7 +3465,7 @@ local testPlayers = {
     { template = "UNHOLY_DK", name = "Darthchan" },
     { template = "UNHOLY_DK", name = "Mes" },
     { template = "SUB_ROGUE", name = "Nahj" },
-    { template = "SUB_ROGUE", name = "Invisbull", racial = 132368, race = "Human" },
+    { template = "SUB_ROGUE", name = "Invisbull", racial = 20549, race = "Tauren" },
     { template = "SUB_ROGUE", name = "Cshero" },
     { template = "SUB_ROGUE", name = "Pshero" },
     { template = "SUB_ROGUE", name = "Whaazz" },

@@ -5324,7 +5324,7 @@ else
 
                                     args["healer_dispels"].args["spell_" .. spellID] = {
                                         order = healerOrder,
-                                        name = "|T" .. data.texture .. ":16|t " .. data.name,
+                                        name = "|T" .. (data.texture or "") .. ":16|t " .. data.name,
                                         type = "toggle",
                                         disabled = function(info) return not info.handler.db.profile.showDispels end,
                                         get = function(info) return info.handler.db.profile.dispelCategories[settingKey] end,

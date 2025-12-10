@@ -2038,6 +2038,15 @@ function sArenaMixin:SetMouseState(state)
             end
         end
 
+        if not isMidnight and sArenaMixin.drCategories then
+            for _, category in ipairs(sArenaMixin.drCategories) do
+                local drFrame = frame[category]
+                if drFrame then
+                    drFrame:EnableMouse(state)
+                end
+            end
+        end
+
         frame.SpecIcon:EnableMouse(state)
         frame.Trinket:EnableMouse(state)
         frame.Racial:EnableMouse(state)

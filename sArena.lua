@@ -1,5 +1,6 @@
 local isRetail = sArenaMixin.isRetail
 local isMidnight = sArenaMixin.isMidnight
+local isTBC = sArenaMixin.isTBC
 
 sArenaMixin.layouts = {}
 sArenaMixin.defaultSettings = {
@@ -292,7 +293,7 @@ local emptyLayoutOptionsTable = {
 local blizzFrame
 local changedParent
 local UpdateBlizzVisibility
-if isRetail then
+if isRetail and not isTBC then
     UpdateBlizzVisibility = function()
         -- Hide Blizzard Arena Frames while in Arena
         if CompactArenaFrame.isHidden then return end
@@ -2145,7 +2146,7 @@ function sArenaFrameMixin:OnLoad()
         self:RegisterUnitEvent("UNIT_AURA", unit)
         self:RegisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", unit)
         self:RegisterUnitEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED", unit)
-        if isRetail then
+        if isRetail or isTBC then
             self.CastBar.empoweredFix = true
             self.CastBar:SetUnit(unit, false, true)
         else

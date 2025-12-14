@@ -1,3 +1,7 @@
+2.2.9b
+- Rework Class Icon stuff behind the scenes, fixes some minor issues too.
+- Fix Spec Text disappearing on unit death and not showing again on shuffle round change because I forgot about shuffle for the millionth time.
+
 2.2.9
 - Add health/mana background texture & color settings.
 - Fix Pixelated layout's ClassIconCooldown not showing.

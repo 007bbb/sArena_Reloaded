@@ -2566,7 +2566,7 @@ function sArenaFrameMixin:OnEvent(event, eventUnit, arg1)
         else
             self:UpdatePlayer()
         end
-        self:SetAlpha((isTBC and UnitExists(self.unit) and 1 or stealthAlpha) or 1)
+        self:SetAlpha((isTBC and (UnitExists(self.unit) and 1 or stealthAlpha)) or 1)
         self.HealthBar:SetAlpha(1)
         if TestTitle then
             TestTitle:Hide()

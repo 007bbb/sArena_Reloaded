@@ -2830,6 +2830,11 @@ function sArenaMixin:InitializeDRFrames()
                     drFrame.DRText:SetTextColor(0, 1, 0)
                     drFrame.DRText:SetText("½")
 
+                    hooksecurefunc(drFrame.ImmunityIndicator, "SetShown", function(self, SetShown)
+                        drFrame.Border:SetAlphaFromBoolean(SetShown, 0, 1)
+                        drFrame.DRText:SetAlphaFromBoolean(SetShown, 0, 1)
+                    end)
+
                     drFrame.DRText2 = drFrame.DRTextFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
                     drFrame.DRText2:SetPoint(drTextAnchor, drTextOffsetX, drTextOffsetY)
                     drFrame.DRText2:SetFont("Interface\\AddOns\\sArena_MoP\\Textures\\arialn.ttf", 14, "OUTLINE")

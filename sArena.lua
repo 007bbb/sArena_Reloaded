@@ -15,6 +15,7 @@ sArenaMixin.defaultSettings = {
         decimalThreshold = 6,
         --darkMode = (BetterBlizzFramesDB and BetterBlizzFramesDB.darkModeUi) or C_AddOns.IsAddOnLoaded("FrameColor") or nil,
         forceShowTrinketOnHuman = not isRetail and true or nil,
+        shadowSightTimer = isTBC and true or nil,
         darkModeValue = 0.2,
         desaturateTrinketCD = true,
         desaturateDispelCD = true,
@@ -53,7 +54,12 @@ LSM:Register("font", "Prototype", "Interface\\Addons\\sArena_Reloaded\\Textures\
 LSM:Register("font", "PT Sans Narrow Bold", "Interface\\Addons\\sArena_Reloaded\\Textures\\PTSansNarrow-Bold.ttf", LSM.LOCALE_BIT_western + LSM.LOCALE_BIT_ruRU)
 local GetSpellTexture = GetSpellTexture or C_Spell.GetSpellTexture
 local stealthAlpha = 0.4
+local shadowsightStartTime = 95
+local shadowsightResetTime = 120
+local shadowSightID = 34709
 sArenaMixin.beenInArena = false
+sArenaMixin.shadowsightTimers = {0, 0}
+sArenaMixin.shadowsightAvailable = 2
 
 -- TBC: Track which arena units we've seen (to work around UnitExists returning false for stealthed units)
 if isTBC then
@@ -1114,15 +1120,22 @@ function sArenaMixin:OnEvent(event, ...)
         if combatEvent == "SPELL_CAST_SUCCESS" or combatEvent == "SPELL_AURA_APPLIED" then
 
             -- TBC Spec Detection
-            if isTBC and (sArenaMixin.tbcSpecSpells[spellID] or sArenaMixin.tbcSpecBuffs[spellID]) then
-                for i = 1, sArenaMixin.maxArenaOpponents do
-                    if (sourceGUID == UnitGUID("arena" .. i)) then
-                        local ArenaFrame = self["arena" .. i]
-                        if ArenaFrame:CheckForSpecSpell(spellID) then
-                            break
+            if isTBC then
+                if (sArenaMixin.tbcSpecSpells[spellID] or sArenaMixin.tbcSpecBuffs[spellID]) then
+                    for i = 1, sArenaMixin.maxArenaOpponents do
+                        if (sourceGUID == UnitGUID("arena" .. i)) then
+                            local ArenaFrame = self["arena" .. i]
+                            if ArenaFrame:CheckForSpecSpell(spellID) then
+                                break
+                            end
                         end
                     end
                 end
+            end
+
+            -- Shadowsight
+            if spellID == shadowSightID and db.profile.shadowSightTimer then
+                self:OnShadowsightTaken()
             end
 
             -- Non-duration auras
@@ -1255,6 +1268,28 @@ function sArenaMixin:OnEvent(event, ...)
                 LibStub("AceConfigDialog-3.0"):Open("sArena")
             end)
         end
+
+        -- C_Timer.After(2, function()
+        --     self.ShadowsightTimer:ClearAllPoints()
+        --     if UIWidgetTopCenterContainerFrame then
+        --         self.ShadowsightTimer:SetParent(UIWidgetTopCenterContainerFrame)
+        --         self.ShadowsightTimer:SetPoint("TOP", UIWidgetTopCenterContainerFrame, "BOTTOM", 0, -4)
+        --     else
+        --         self.ShadowsightTimer:SetPoint("TOP", UIParent, "TOP", 0, -100)
+        --     end
+        --     if self.ShadowsightTimer.Icon1 then
+        --         self.ShadowsightTimer.Icon1:SetTexture(136155)
+        --         self.ShadowsightTimer.Icon1:Show()
+        --     end
+        --     if self.ShadowsightTimer.Icon2 then
+        --         self.ShadowsightTimer.Icon2:SetTexture(136155)
+        --         self.ShadowsightTimer.Icon2:Show()
+        --     end
+        --     self.ShadowsightTimer.Text:SetText("Shadowsight ready!")
+        --     self.ShadowsightTimer.Text:SetTextColor(1, 0.8, 0)
+        --     self.ShadowsightTimer:Show()
+        -- end)
+
         self:UnregisterEvent("PLAYER_LOGIN")
     elseif (event == "PLAYER_ENTERING_WORLD") then
         local _, instanceType = IsInInstance()
@@ -1320,6 +1355,7 @@ function sArenaMixin:OnEvent(event, ...)
                 self:UnregisterEvent("CHAT_MSG_BG_SYSTEM_NEUTRAL")
             end
             self:UnregisterWidgetEvents()
+            self:ResetShadowsightTimer()
         end
     elseif event == "CHAT_MSG_BG_SYSTEM_NEUTRAL" then
         local msg = ...
@@ -1327,6 +1363,9 @@ function sArenaMixin:OnEvent(event, ...)
             C_Timer.After(0.5, function()
                 self:HandleArenaStart()
             end)
+            if db.profile.shadowSightTimer then
+                self:StartShadowsightTimer(shadowsightStartTime)
+            end
         end
     elseif event == "PLAYER_SPECIALIZATION_CHANGED" then
         self:UpdatePlayerSpec()
@@ -1481,6 +1520,135 @@ function sArenaMixin:RefreshConfig()
     self:SetLayout(_, db.profile.currentLayout)
 end
 
+function sArenaMixin:ResetShadowsightTimer()
+    if self.shadowsightTicker then
+        self.shadowsightTicker:Cancel()
+        self.shadowsightTicker = nil
+    end
+    if self.ShadowsightTimer then
+        if self.ShadowsightTimer.Text then
+            self.ShadowsightTimer.Text:SetText("")
+        end
+        self.ShadowsightTimer:Hide()
+    end
+    self.shadowsightTimers = {0, 0}
+    self.shadowsightAvailable = 2
+end
+
+function sArenaMixin:StartShadowsightTimer(time)
+    if self.shadowsightTicker then
+        self.shadowsightTicker:Cancel()
+        self.shadowsightTicker = nil
+    end
+
+    -- Position the parent frame
+    self.ShadowsightTimer:ClearAllPoints()
+    if UIWidgetTopCenterContainerFrame then
+        print("intended")
+        self.ShadowsightTimer:SetParent(UIWidgetTopCenterContainerFrame)
+        self.ShadowsightTimer:SetPoint("TOP", UIWidgetTopCenterContainerFrame, "BOTTOM", 0, -4)
+    else
+        print("top center screen")
+        self.ShadowsightTimer:SetPoint("TOP", UIParent, "TOP", 0, -100)
+    end
+
+    -- Set up the icon texture
+    if self.ShadowsightTimer.Icon1 then
+        self.ShadowsightTimer.Icon1:SetTexture(136155)
+    end
+    if self.ShadowsightTimer.Icon2 then
+        self.ShadowsightTimer.Icon2:SetTexture(136155)
+    end
+
+    self.ShadowsightTimer:Show()
+
+    local currentTime = GetTime()
+    self.shadowsightTimers[1] = currentTime + time
+    self.shadowsightTimers[2] = currentTime + time
+    self.shadowsightAvailable = 0
+
+    self.shadowsightTicker = C_Timer.NewTicker(0.1, function()
+        self:UpdateShadowsightDisplay()
+    end)
+end
+
+function sArenaMixin:OnShadowsightTaken()
+    local currentTime = GetTime()
+    local resetTime = currentTime + shadowsightResetTime
+
+    if self.shadowsightTimers[1] <= 1 and self.shadowsightTimers[2] <= 1 then
+        self.shadowsightTimers[1] = resetTime
+        self.shadowsightTimers[2] = 0
+
+        if not self.shadowsightTicker then
+            self.ShadowsightTimer:ClearAllPoints()
+            if UIWidgetTopCenterContainerFrame then
+                self.ShadowsightTimer:SetParent(UIWidgetTopCenterContainerFrame)
+                self.ShadowsightTimer:SetPoint("TOP", UIWidgetTopCenterContainerFrame, "BOTTOM", 0, -10)
+            else
+                self.ShadowsightTimer:SetPoint("TOP", UIParent, "TOP", 0, -100)
+            end
+            self.ShadowsightTimer:Show()
+
+            self.shadowsightTicker = C_Timer.NewTicker(0.1, function()
+                self:UpdateShadowsightDisplay()
+            end)
+        end
+    else
+        if self.shadowsightAvailable > 0 then
+            self.shadowsightAvailable = self.shadowsightAvailable - 1
+        end
+
+        if self.shadowsightTimers[1] <= currentTime then
+            self.shadowsightTimers[1] = resetTime
+        elseif self.shadowsightTimers[2] <= currentTime then
+            self.shadowsightTimers[2] = resetTime
+        end
+    end
+
+    self:UpdateShadowsightDisplay()
+end
+
+function sArenaMixin:UpdateShadowsightDisplay()
+    local currentTime = GetTime()
+    local availableCount = 0
+    local shortestTimer = math.huge
+
+    for i = 1, 2 do
+        if self.shadowsightTimers[i] <= currentTime then
+            availableCount = availableCount + 1
+        else
+            shortestTimer = math.min(shortestTimer, self.shadowsightTimers[i])
+        end
+    end
+
+    self.shadowsightAvailable = availableCount
+
+    if availableCount > 0 then
+        self.ShadowsightTimer.Text:SetText("Shadowsight ready!")
+        self.ShadowsightTimer.Text:SetTextColor(1, 0.8, 0)
+        if self.ShadowsightTimer.Icon1 then
+            self.ShadowsightTimer.Icon1:Show()
+        end
+        if self.ShadowsightTimer.Icon2 then
+            if availableCount >= 2 then
+                self.ShadowsightTimer.Icon2:Show()
+            else
+                self.ShadowsightTimer.Icon2:Hide()
+            end
+        end
+    elseif shortestTimer < math.huge then
+        local timeLeft = math.ceil(shortestTimer - currentTime)
+        self.ShadowsightTimer.Text:SetText(string.format("Shadowsight spawns in %d sec", timeLeft))
+        self.ShadowsightTimer.Text:SetTextColor(1, 0.8, 0)
+        if self.ShadowsightTimer.Icon1 then
+            self.ShadowsightTimer.Icon1:Hide()
+        end
+        if self.ShadowsightTimer.Icon2 then
+            self.ShadowsightTimer.Icon2:Hide()
+        end
+    end
+end
 
 function sArenaMixin:ApplyPrototypeFont(frame)
     local layout = db.profile.currentLayout

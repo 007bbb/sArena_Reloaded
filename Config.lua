@@ -4605,6 +4605,17 @@ else
                                             info.handler:Test()
                                         end,
                                     },
+                                    shadowSightTimer = {
+                                        order = 7.5,
+                                        name = "Enable Shadowsight Timer",
+                                        desc = "Show a timer at the top of the screen for when Shadowsight buffs spawn in the arena",
+                                        type = "toggle",
+                                        width = "full",
+                                        get = function(info) return info.handler.db.profile.shadowSightTimer end,
+                                        set = function(info, val)
+                                            info.handler.db.profile.shadowSightTimer = val
+                                        end,
+                                    },
                                     colorTrinket = {
                                         order = 8,
                                         name = "Color Trinket",

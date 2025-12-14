@@ -501,13 +501,16 @@ function layout:Initialize(frame)
     frame.Dispel:SetSize(41, 41)
     frame.Name:SetTextColor(1,1,1)
     frame.SpecNameText:SetTextColor(1,1,1)
+    frame.ClassIconCooldown:SetFrameStrata("HIGH")
+    frame.ClassIconCooldown:SetUseCircularEdge(false)
+    frame.ClassIconCooldown:SetSwipeTexture(1)
 
     frame.Trinket.Cooldown:SetSwipeTexture(1)
-    frame.Trinket.Cooldown:SetSwipeColor(0, 0, 0, 0.5)
+    frame.Trinket.Cooldown:SetSwipeColor(0, 0, 0, 0.55)
     frame.Trinket.Cooldown:SetUseCircularEdge(false)
 
     frame.Racial.Cooldown:SetSwipeTexture(1)
-    frame.Racial.Cooldown:SetSwipeColor(0, 0, 0, 0.5)
+    frame.Racial.Cooldown:SetSwipeColor(0, 0, 0, 0.55)
     frame.Racial.Cooldown:SetUseCircularEdge(false)
 
     if not frame.Trinket.TrinketPixelBorderHook then

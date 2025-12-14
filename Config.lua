@@ -2979,7 +2979,7 @@ function sArenaMixin:UpdateDRSettings(db, info, val)
                                 drFrame.Cooldown:SetDrawSwipe(false)
                                 drFrame.Cooldown:SetDrawEdge(false)
                             else
-                                drFrame.Cooldown:SetSwipeColor(0, 0, 0, 0.5)
+                                drFrame.Cooldown:SetSwipeColor(0, 0, 0, 0.55)
                                 drFrame.Cooldown:SetDrawSwipe(true)
                                 drFrame.Cooldown:SetDrawEdge(not disableSwipeEdge)
                             end
@@ -3515,6 +3515,7 @@ function sArenaMixin:UpdateDRSettings(db, info, val)
             dr:SetSize(size, size)
             dr.Border:SetPoint("TOPLEFT", dr, "TOPLEFT", -borderSize, borderSize)
             dr.Border:SetPoint("BOTTOMRIGHT", dr, "BOTTOMRIGHT", borderSize, -borderSize)
+            dr.Cooldown:SetSwipeColor(0, 0, 0, 0.55)
 
             local text = dr.Cooldown.Text
             local layoutCF = (self.layoutdb and self.layoutdb.changeFont)

@@ -3694,7 +3694,7 @@ function sArenaMixin:UpdateDRSettings(db, info, val)
                 if not dr.Boverlay then
                     dr.Boverlay = CreateFrame("Frame", nil, dr)
                     dr.Boverlay:SetFrameStrata("MEDIUM")
-                    dr.Boverlay:SetFrameLevel(6)
+                    dr.Boverlay:SetFrameLevel(26)
                 end
                 dr.Boverlay:Show()
                 dr.Border:SetParent(dr.Boverlay)

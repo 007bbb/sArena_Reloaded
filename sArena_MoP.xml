@@ -222,8 +222,24 @@
         </Layers>
 
         <Frames>
-            <StatusBar parentKey="HealthBar" drawLayer="BORDER" useParentLevel="true"/>
-            <StatusBar parentKey="PowerBar" drawLayer="BORDER" useParentLevel="true"/>
+            <StatusBar parentKey="HealthBar" drawLayer="BORDER" useParentLevel="true">
+                <Layers>
+                    <Layer level="BACKGROUND">
+                        <Texture parentKey="hpUnderlay" setAllPoints="true">
+                            <Color r="0" g="0" b="0" a="0.6"/>
+                        </Texture>
+                    </Layer>
+                </Layers>
+            </StatusBar>
+            <StatusBar parentKey="PowerBar" drawLayer="BORDER" useParentLevel="true">
+                <Layers>
+                    <Layer level="BACKGROUND">
+                        <Texture parentKey="ppUnderlay" setAllPoints="true">
+                            <Color r="0" g="0" b="0" a="0.6"/>
+                        </Texture>
+                    </Layer>
+                </Layers>
+            </StatusBar>
             <StatusBar parentKey="CastBar" inherits="sArenaCastBarFrameTemplate"/>
             <Cooldown parentKey="ClassIconCooldown" drawLayer="BORDER" useParentLevel="true" reverse="true" hideCountdownNumbers="false" inherits="CooldownFrameTemplate">
                 <Scripts>

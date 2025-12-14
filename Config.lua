@@ -198,6 +198,59 @@ function sArenaMixin:GetLayoutOptionsTable(layoutName)
                             end,
                             width = "75%",
                         },
+                        bgTexture = {
+                            order         = 4,
+                            type          = "select",
+                            name          = "Background Texture",
+                            desc          = "Texture for the health/power bar underlays.",
+                            style         = "dropdown",
+                            dialogControl = "LSM30_Statusbar",
+                            values        = StatusbarValues,
+                            get           = function(info)
+                                local layout = info.handler.db.profile.layoutSettings[layoutName]
+                                local t = layout.textures
+                                return (t and t.bgTexture) or "Solid"
+                            end,
+                            set           = function(info, key)
+                                local layout = info.handler.db.profile.layoutSettings[layoutName]
+                                layout.textures = layout.textures or {
+                                    generalStatusBarTexture = "sArena Default",
+                                    healStatusBarTexture    = "sArena Default",
+                                    castbarStatusBarTexture = "sArena Default",
+                                    castbarUninterruptibleTexture = "sArena Default",
+                                    bgTexture = "Solid",
+                                }
+                                layout.textures.bgTexture = key
+                                info.handler:UpdateTextures()
+                            end,
+                            width = "75%",
+                        },
+                        bgColor = {
+                            order = 5,
+                            type  = "color",
+                            name  = "Background Color",
+                            desc  = "Color for the health/power bar underlays.",
+                            hasAlpha = true,
+                            get   = function(info)
+                                local layout = info.handler.db.profile.layoutSettings[layoutName]
+                                local c = layout.textures and layout.textures.bgColor or {0, 0, 0, 0.6}
+                                return c[1], c[2], c[3], c[4]
+                            end,
+                            set   = function(info, r, g, b, a)
+                                local layout = info.handler.db.profile.layoutSettings[layoutName]
+                                layout.textures = layout.textures or {
+                                    generalStatusBarTexture = "sArena Default",
+                                    healStatusBarTexture    = "sArena Default",
+                                    castbarStatusBarTexture = "sArena Default",
+                                    castbarUninterruptibleTexture = "sArena Default",
+                                    bgTexture = "Solid",
+                                    bgColor = {0, 0, 0, 0.6},
+                                }
+                                layout.textures.bgColor = {r, g, b, a}
+                                info.handler:UpdateTextures()
+                            end,
+                            width = 1.5,
+                        },
                     },
                 },
                 other = {

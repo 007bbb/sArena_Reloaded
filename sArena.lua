@@ -514,12 +514,16 @@ function sArenaMixin:UpdateTextures()
         healStatusBarTexture      = "sArena Stripes",
         castbarStatusBarTexture   = "sArena Default",
         castbarUninterruptibleTexture = "sArena Default",
+        bgTexture = "Solid",
+        bgColor = {0, 0, 0, 0.6},
     }
 
     local castTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, texKeys.castbarStatusBarTexture)
     local castUninterruptibleTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, texKeys.castbarUninterruptibleTexture or texKeys.castbarStatusBarTexture)
     local dpsTexture     = LSM:Fetch(LSM.MediaType.STATUSBAR, texKeys.generalStatusBarTexture)
     local healerTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, texKeys.healStatusBarTexture)
+    local bgTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, texKeys.bgTexture or "Solid")
+    local bgColor = texKeys.bgColor or {0, 0, 0, 0.6}
     local modernCastbars            = layout.castBar.useModernCastbars
     local keepDefaultModernTextures = layout.castBar.keepDefaultModernTextures
     local interruptStatusColorOn     = layout.castBar.interruptStatusColorOn
@@ -558,6 +562,16 @@ function sArenaMixin:UpdateTextures()
 
         frame.HealthBar:SetStatusBarTexture(textureToUse)
         frame.PowerBar:SetStatusBarTexture(dpsTexture)
+
+        -- Set background texture and color
+        if frame.HealthBar.hpUnderlay then
+            frame.HealthBar.hpUnderlay:SetTexture(bgTexture)
+            frame.HealthBar.hpUnderlay:SetVertexColor(bgColor[1], bgColor[2], bgColor[3], bgColor[4])
+        end
+        if frame.PowerBar.ppUnderlay then
+            frame.PowerBar.ppUnderlay:SetTexture(bgTexture)
+            frame.PowerBar.ppUnderlay:SetVertexColor(bgColor[1], bgColor[2], bgColor[3], bgColor[4])
+        end
 
         frame.HealthBar:SetReverseFill(reverseBarsFill)
         frame.PowerBar:SetReverseFill(reverseBarsFill)
@@ -3145,11 +3159,6 @@ function sArenaFrameMixin:ResetLayout()
         self.frameTexture:SetDesaturated(false)
         self.frameTexture:SetVertexColor(1, 1, 1)
         self.frameTexture:Hide()
-    end
-
-    if self.ppUnderlay then
-        self.hpUnderlay:SetColorTexture(0, 0, 0, 0.65)
-        self.ppUnderlay:SetColorTexture(0, 0, 0, 0.65)
     end
 
     if self.CastBar.Border then

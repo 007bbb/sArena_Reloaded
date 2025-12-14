@@ -266,8 +266,7 @@ function sArenaMixin:RemovePixelBorders()
         hideBorder(frame.CastBar, "castBar")
         hideBorder(frame.CastBar, "castBarIcon")
 
-        -- Reset ClassIcon to default draw layer and scale
-        frame.ClassIcon:SetDrawLayer("BORDER", 1)
+        -- Reset ClassIcon scale
         frame.ClassIcon:SetScale(1)
 
         -- Reset cast bar icon position
@@ -512,7 +511,6 @@ function layout:Initialize(frame)
     frame.Dispel:SetSize(41, 41)
     frame.Name:SetTextColor(1,1,1)
     frame.SpecNameText:SetTextColor(1,1,1)
-    frame.ClassIconCooldown:SetFrameStrata("HIGH")
     frame.ClassIconCooldown:SetUseCircularEdge(false)
     frame.ClassIconCooldown:SetSwipeTexture(1)
 
@@ -618,9 +616,6 @@ function layout:Initialize(frame)
     local classIconScale = self.db.classIcon and self.db.classIcon.scale or 1
     frame.ClassIcon:SetScale(classIconScale)
     frame.ClassIcon:Show()
-
-    -- Raise ClassIcon above healthbar for overlaying
-    frame.ClassIcon:SetDrawLayer("OVERLAY", 1)
 
     local f = frame.Name
     f:SetJustifyH("LEFT")

@@ -2901,6 +2901,7 @@ function sArenaFrameMixin:UpdatePlayer(unitEvent)
         self:UpdateNameColor()
         self.Name:SetShown(true)
     end
+    self.SpecNameText:SetText(self.specName or "")
 
     self:UpdateStatusTextVisible()
     self:SetStatusText()

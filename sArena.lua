@@ -2098,14 +2098,28 @@ function sArenaMixin:SetMouseState(state)
         frame.Trinket:EnableMouse(state)
         frame.Racial:EnableMouse(state)
         frame.Dispel:EnableMouse(state)
+        frame.ClassIcon:EnableMouse(state)
 
         for _, child in pairs({frame.WidgetOverlay:GetChildren()}) do
             child:EnableMouse(state)
         end
+
+        if isTBC and not InCombatLockdown() then
+            local shouldEnableMouse
+            if state then
+                -- Outside arena: always clickable
+                shouldEnableMouse = true
+            else
+                -- Inside arena: only clickable up to party size
+                local partySize = GetNumGroupMembers() or 2
+                shouldEnableMouse = (i <= partySize)
+            end
+
+            frame:EnableMouse(shouldEnableMouse)
+        end
     end
 end
 
--- Arena Frames
 
 local function ResetTexture(texturePool, t)
     if (texturePool) then
@@ -2927,6 +2941,12 @@ function sArenaFrameMixin:UpdatePlayer(unitEvent)
         self:SetAlpha(stealthAlpha)
     else
         self:SetAlpha(1)
+    end
+
+    -- Workaround to show frames in TBC in combat.
+    -- Does not actualy call Show() but SetAlpha() on TBC.
+    if isTBC then
+        self:Show()
     end
 end
 

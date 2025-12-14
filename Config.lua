@@ -63,133 +63,27 @@ local function validateCombat()
 end
 
 local growthValues = { "Down", "Up", "Right", "Left" }
-local drCategories
-local racialCategories
-local dispelCategories
-local drIcons
-local drCategorieslist
+local drIcons = sArenaMixin.defaultSettings.profile.drIcons or {}
 
-if isRetail then
-
-    racialCategories = {}
-    for raceKey, data in pairs(sArenaMixin.racialData or {}) do
-        local name = raceKey
-        local texture = data and data.texture
-        if texture then
-            if type(texture) == "string" then
-                racialCategories[raceKey] = "|T" .. texture .. ":16|t " .. name
-            else
-                racialCategories[raceKey] = "|T" .. tostring(texture) .. ":16|t " .. name
-            end
-        else
-            racialCategories[raceKey] = name
-        end
-    end
-
-    -- Load dispel categories from dispelData
-    dispelCategories = {}
-    for spellID, data in pairs(sArenaMixin.dispelData or {}) do
-        dispelCategories[spellID] = "|T" .. data.texture .. ":16|t " .. data.name .. " (" .. data.classes .. ")"
-    end
-
-    drIcons = {
-        ["Stun"] = 132298,
-        ["Incapacitate"] = 136071,
-        ["Disorient"] = 136183,
-        ["Silence"] = 458230,
-        ["Root"] = 136100,
-        ["Knock"] = 237589,
-        ["Disarm"] = 132343,
-    }
-
-    drCategories = {}
-    for category, tex in pairs(drIcons) do
-        drCategories[category] = "|T" .. tostring(tex) .. ":16|t " .. category
-    end
-    drCategorieslist = {
-        "Incapacitate",
-        "Stun",
-        "Root",
-        "Disarm",
-        "Disorient",
-        "Silence",
-        "Knock",
-    }
-else
-    drCategories = {
-        ["Incapacitate"] = "Incapacitate",
-        ["Stun"] = "Stun",
-        ["Root"] = "Root",
-        ["Fear"] = "Fear",
-        ["Silence"] = "Silence",
-        ["Disarm"] = "Disarm",
-        ["Disorient"] = "Disorient",
-        ["Horror"] = "Horror",
-        ["Cyclone"] = "Cyclone",
-        ["MindControl"] = "MindControl",
-        ["RandomStun"] = "RandomStun",
-        ["RandomRoot"] = "RandomRoot",
-        ["Charge"] = "Charge",
-    }
-
-    racialCategories = {}
-    for raceKey, data in pairs(sArenaMixin.racialData or {}) do
-        local name = raceKey
-        local texture = data and data.texture
-        if texture then
-            if type(texture) == "string" then
-                racialCategories[raceKey] = "|T" .. texture .. ":16|t " .. name
-            else
-                racialCategories[raceKey] = "|T" .. tostring(texture) .. ":16|t " .. name
-            end
-        else
-            racialCategories[raceKey] = name
-        end
-    end
-
-    -- Load dispel categories from dispelData  
-    dispelCategories = {}
-    for spellID, data in pairs(sArenaMixin.dispelData or {}) do
-        dispelCategories[spellID] = "|T" .. (data.texture or "134400") .. ":16|t " .. data.name .. " (" .. data.classes .. ")"
-    end
-
-    drIcons = {
-        ["Incapacitate"] = 136071,
-        ["Stun"] = 132298,
-        ["RandomStun"] = 133477,
-        ["RandomRoot"] = 135852,
-        ["Root"] = 135848,
-        ["Disarm"] = 132343,
-        ["Fear"] = 136183,
-        ["Disorient"] = 134153,
-        ["Silence"] = 458230,
-        ["Horror"] = 237568,
-        ["MindControl"] = 136206,
-        ["Cyclone"] = 136022,
-        ["Charge"] = 132337,
-    }
-
-    drCategories = {}
-    for category, tex in pairs(drIcons) do
-        drCategories[category] = "|T" .. tostring(tex) .. ":16|t " .. category
-    end
-    drCategorieslist = {
-        "Incapacitate",
-        "Stun",
-        "RandomStun",
-        "RandomRoot",
-        "Root",
-        "Disarm",
-        "Fear",
-        "Disorient",
-        "Silence",
-        "Horror",
-        "MindControl",
-        "Cyclone",
-        "Charge",
-    }
+local drCategoryDisplay = {}
+for category, tex in pairs(drIcons) do
+    drCategoryDisplay[category] = "|T" .. tostring(tex) .. ":16|t " .. category
 end
 
+local racialCategories = {}
+for raceKey, data in pairs(sArenaMixin.racialData or {}) do
+    local name = raceKey
+    local texture = data and data.texture
+    if texture then
+        if type(texture) == "string" then
+            racialCategories[raceKey] = "|T" .. texture .. ":16|t " .. name
+        else
+            racialCategories[raceKey] = "|T" .. tostring(texture) .. ":16|t " .. name
+        end
+    else
+        racialCategories[raceKey] = name
+    end
+end
 
 local function StatusbarValues()
     local t, keys = {}, {}
@@ -1392,7 +1286,7 @@ function sArenaMixin:GetLayoutOptionsTable(layoutName)
         Knock        = 7,
     }
 
-    for categoryKey, categoryName in pairs(drCategories) do
+    for categoryKey, categoryName in pairs(drCategoryDisplay) do
         optionsTable.dr.args.drCategorySizing.args[categoryKey] = {
             order = drCategoryOrder[categoryKey],
             name = categoryName,
@@ -3587,7 +3481,7 @@ function sArenaMixin:UpdateDRSettings(db, info, val)
     end
 
     -- Legacy system for non-Midnight
-    local categories = drCategorieslist
+    local categories = sArenaMixin.drCategories
     local categorySizeOffsets = db.drCategorySizeOffsets or {}
 
     sArenaMixin.drBaseSize = db.size
@@ -5089,7 +4983,7 @@ else
                                                 db.profile.drCategories[key] = val
                                             end
                                         end,
-                                        values = drCategories,
+                                        values = drCategoryDisplay,
                                     },
                                 },
                             },

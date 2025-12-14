@@ -13,6 +13,7 @@
 
     <Script file="sArena_Init.lua"/>
     <Script file="sArena.lua"/>
+    <Script file="Modules\SpecFinder.lua"/>
     <Script file="Modules\Interrupt.lua"/>
     <Script file="Modules\Racials.lua"/>
     <Script file="Modules\Dispels.lua"/>

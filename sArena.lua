@@ -55,7 +55,12 @@ local GetSpellTexture = GetSpellTexture or C_Spell.GetSpellTexture
 local stealthAlpha = 0.4
 sArenaMixin.beenInArena = false
 
-local healerSpecNames = {
+-- TBC: Track which arena units we've seen (to work around UnitExists returning false for stealthed units)
+if isTBC then
+    sArenaMixin.seenArenaUnits = {}
+end
+
+sArenaMixin.healerSpecNames = {
     ["Discipline"] = true,
     ["Restoration"] = true,
     ["Mistweaver"] = true,
@@ -923,6 +928,9 @@ function sArenaMixin:HandleArenaStart()
         local frame = self["arena" .. i]
         if frame:IsShown() then break end
         if UnitExists("arena"..i) then
+            if isTBC then
+                sArenaMixin.seenArenaUnits[i] = true
+            end
             frame:UpdateVisible()
             frame:UpdatePlayer("seen")
         end
@@ -1091,6 +1099,19 @@ function sArenaMixin:OnEvent(event, ...)
 
         if combatEvent == "SPELL_CAST_SUCCESS" or combatEvent == "SPELL_AURA_APPLIED" then
 
+            -- TBC Spec Detection
+            print(spellID, combatEvent, sArenaMixin.tbcSpecSpells[spellID], sArenaMixin.tbcSpecBuffs[spellID])
+            if isTBC and (sArenaMixin.tbcSpecSpells[spellID] or sArenaMixin.tbcSpecBuffs[spellID]) then
+                for i = 1, sArenaMixin.maxArenaOpponents do
+                    if (sourceGUID == UnitGUID("arena" .. i)) then
+                        local ArenaFrame = self["arena" .. i]
+                        if ArenaFrame:CheckForSpecSpell(spellID) then
+                            break
+                        end
+                    end
+                end
+            end
+
             -- Non-duration auras
             if castToAuraMap[spellID] and combatEvent == "SPELL_CAST_SUCCESS" then
                 local auraID = castToAuraMap[spellID]
@@ -1226,6 +1247,18 @@ function sArenaMixin:OnEvent(event, ...)
         local _, instanceType = IsInInstance()
         UpdateBlizzVisibility(instanceType)
         self:SetMouseState(instanceType ~= "arena")
+
+        if isTBC then
+            sArenaMixin.seenArenaUnits = {}
+            if instanceType == "arena" then
+                sArenaMixin.justEnteredArena = true
+                C_Timer.After(6, function()
+                    sArenaMixin.justEnteredArena = nil
+                end)
+            else
+                sArenaMixin.justEnteredArena = nil
+            end
+        end
 
         if isMidnight and not self.midnightDRFrames then
             self.midnightDRFrames = true
@@ -2484,7 +2517,7 @@ function sArenaFrameMixin:OnEvent(event, eventUnit, arg1)
         else
             self:UpdatePlayer()
         end
-        self:SetAlpha(1)
+        self:SetAlpha((isTBC and UnitExists(self.unit) and 1 or stealthAlpha) or 1)
         self.HealthBar:SetAlpha(1)
         if TestTitle then
             TestTitle:Hide()
@@ -2542,10 +2575,19 @@ end
 local function GetNumArenaOpponentsFallback()
     local count = 0
     for i = 1, sArenaMixin.maxArenaOpponents do
-        if UnitExists("arena" .. i) then
+        if UnitExists("arena" .. i) or (isTBC and sArenaMixin.seenArenaUnits[i]) then
             count = count + 1
         end
     end
+
+    -- TBC: Use party size as fallback, but only after the match has started or we're not in the starting room
+    if isTBC and count < GetNumGroupMembers() then
+        local inPreparation = C_UnitAuras.GetPlayerAuraBySpellID(32727)
+        if not inPreparation and not sArenaMixin.justEnteredArena and sArenaMixin.arenaMatchStarted then
+            count = GetNumGroupMembers() or count
+        end
+    end
+
     return count
 end
 
@@ -2565,7 +2607,7 @@ function sArenaFrameMixin:UpdateVisible()
     local numSpecs = GetNumArenaOpponentSpecs()
     local numOpponents = (numSpecs == 0) and GetNumArenaOpponentsFallback() or numSpecs
 
-    if numOpponents >= id then
+    if numOpponents >= id or (isTBC and sArenaMixin.seenArenaUnits[id]) then
         self:Show()
     else
         self:Hide()
@@ -2750,6 +2792,10 @@ end
 function sArenaFrameMixin:UpdatePlayer(unitEvent)
     local unit = self.unit
 
+    if isTBC and UnitExists(unit) then
+        sArenaMixin.seenArenaUnits[self:GetID()] = true
+    end
+
     self:GetClass()
     if isMidnight then
         self:UpdateClassIcon()
@@ -2811,7 +2857,13 @@ function sArenaFrameMixin:UpdatePlayer(unitEvent)
         self.HealthBar:SetStatusBarColor(0, 1.0, 0, 1.0)
     end
 
-    self:SetAlpha(1)
+    if isTBC and not UnitExists(unit) then
+        self:SetAlpha(stealthAlpha)
+    else
+        self:SetAlpha(1)
+    end
+
+    self:Show()
 end
 
 function sArenaFrameMixin:SetMysteryPlayer()
@@ -2888,26 +2940,29 @@ function sArenaFrameMixin:GetClass()
         self.SpecNameText:SetText("")
     elseif (not self.class) then
         local id = self:GetID()
-        if (GetNumArenaOpponentSpecs() >= id) then
-            local specID = GetArenaOpponentSpec(id) or 0
-            if (specID > 0) then
-                local _, specName, _, specTexture, _, class, classLocal = GetSpecializationInfoByID(specID)
-                self.class = class
-                self.classLocal = classLocal
-                self.specID = specID
-                self.specName = specName
-                self.isHealer = sArenaMixin.healerSpecIDs[specID] or false
-                self.SpecNameText:SetText(specName)
-                self.SpecNameText:SetShown(db.profile.layoutSettings[db.profile.currentLayout].showSpecManaText)
-                self.specTexture = specTexture
-                self.class = class
-                self:UpdateSpecIcon()
-                self:UpdateFrameColors()
-                sArenaMixin:UpdateTextures()
+
+        if not isTBC then
+            if (GetNumArenaOpponentSpecs() >= id) then
+                local specID = GetArenaOpponentSpec(id) or 0
+                if (specID > 0) then
+                    local _, specName, _, specTexture, _, class, classLocal = GetSpecializationInfoByID(specID)
+                    self.class = class
+                    self.classLocal = classLocal
+                    self.specID = specID
+                    self.specName = specName
+                    self.isHealer = sArenaMixin.healerSpecIDs[specID] or false
+                    self.SpecNameText:SetText(specName)
+                    self.SpecNameText:SetShown(db.profile.layoutSettings[db.profile.currentLayout].showSpecManaText)
+                    self.specTexture = specTexture
+                    self.class = class
+                    self:UpdateSpecIcon()
+                    self:UpdateFrameColors()
+                    sArenaMixin:UpdateTextures()
+                end
             end
         end
 
-        if (not self.class and UnitExists(self.unit)) then
+        if (not self.class and (isTBC or UnitExists(self.unit))) then
             self.classLocal, self.class = UnitClass(self.unit)
         end
     end
@@ -3259,9 +3314,9 @@ end
 local specTemplates = {
     BM_HUNTER = {
         class = "HUNTER",
-        specIcon = 461112,
+        specIcon = isTBC and 132164 or 461112,
         castName = "Cobra Shot",
-        castIcon = 461114,
+        castIcon = isTBC and 132211 or 461114,
         racial = 132089,
         race = "Orc",
         specName = "Beast Mastery",
@@ -3269,7 +3324,7 @@ local specTemplates = {
     },
     MM_HUNTER = {
         class = "HUNTER",
-        specIcon = 461113,
+        specIcon = isTBC and 132222 or 461113,
         castName = "Aimed Shot",
         castIcon = 132222,
         racial = 136225,
@@ -3279,7 +3334,7 @@ local specTemplates = {
     },
     SURV_HUNTER = {
         class = "HUNTER",
-        specIcon = 461113,
+        specIcon = isTBC and 132215 or 461113,
         castName = "Mending Bandage",
         castIcon = isRetail and 1014022 or 133690,
         racial = 136225,
@@ -3298,7 +3353,7 @@ local specTemplates = {
     },
     ENH_SHAMAN = {
         class = "SHAMAN",
-        specIcon = 237581,
+        specIcon = isTBC and 136051 or 237581,
         castName = "Stormstrike",
         castIcon = 132314,
         racial = 135923,
@@ -3374,7 +3429,7 @@ local specTemplates = {
         class = "DRUID",
         specIcon = 132115,
         castName = "Cyclone",
-        castIcon = 132469,
+        castIcon = isTBC and 136022 or 132469,
         racial = 132089,
         race = "NightElf",
         specName = "Feral",
@@ -3417,12 +3472,12 @@ local specTemplates = {
     },
     UNHOLY_DK = {
         class = "DEATHKNIGHT",
-        specIcon = 135775,
+        specIcon = isTBC and 136212 or 135775,
         racial = 135726,
         race = "Scourge",
         specName = "Unholy",
         castName = "Army of the Dead",
-        castIcon = 237511,
+        castIcon = isTBC and 136212 or 237511,
         channel = true,
     },
     SUB_ROGUE = {
@@ -3439,7 +3494,7 @@ local specTemplates = {
 
 local testPlayers = {
     { template = "BM_HUNTER", name = "Despytimes" },
-    { template = "BM_HUNTER", name = "Littlejimmy", racial = 20589, race = "Gnome" },
+    { template = "BM_HUNTER", name = "Littlejimmy", racial = 132309, race = "Gnome" },
     { template = "MM_HUNTER", name = "Jellybeans" },
     { template = "SURV_HUNTER", name = "Bicmex" },
     { template = "ELE_SHAMAN", name = "Bluecheese" },
@@ -3475,7 +3530,7 @@ local testPlayers = {
     { template = "UNHOLY_DK", name = "Darthchan" },
     { template = "UNHOLY_DK", name = "Mes" },
     { template = "SUB_ROGUE", name = "Nahj" },
-    { template = "SUB_ROGUE", name = "Invisbull", racial = 20549, race = "Tauren" },
+    { template = "SUB_ROGUE", name = "Invisbull", racial = 132368, race = "Tauren" },
     { template = "SUB_ROGUE", name = "Cshero" },
     { template = "SUB_ROGUE", name = "Pshero" },
     { template = "SUB_ROGUE", name = "Whaazz" },
@@ -3629,7 +3684,7 @@ function sArenaMixin:Test()
         frame.class = data.class
         frame.tempSpecIcon = data.specIcon
         frame.replaceClassIcon = replaceClassIcon
-        frame.isHealer = healerSpecNames[data.specName] or false
+        frame.isHealer = sArenaMixin.healerSpecNames[data.specName] or false
 
         frame:Show()
         frame:SetAlpha(1)

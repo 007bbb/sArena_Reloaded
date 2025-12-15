@@ -95,6 +95,10 @@ function sArenaMixin:Print(fmt, ...)
     print(prefix, string.format(fmt, ...))
 end
 
+local function IsSoloShuffle()
+    return C_PvP and C_PvP.IsSoloShuffle and C_PvP.IsSoloShuffle()
+end
+
 function sArenaMixin:FontValues()
     local t, keys = {}, {}
     for k in pairs(LSM:HashTable(LSM.MediaType.FONT)) do keys[#keys+1] = k end
@@ -1135,7 +1139,7 @@ function sArenaMixin:OnEvent(event, ...)
             end
 
             -- Shadowsight
-            if spellID == shadowSightID and db.profile.shadowSightTimer then
+            if spellID == shadowSightID and db.profile.shadowSightTimer and not IsSoloShuffle() then
                 self:OnShadowsightTaken()
             end
 
@@ -1270,26 +1274,6 @@ function sArenaMixin:OnEvent(event, ...)
             end)
         end
 
-        -- C_Timer.After(2, function()
-        --     self.ShadowsightTimer:ClearAllPoints()
-        --     if UIWidgetTopCenterContainerFrame then
-        --         self.ShadowsightTimer:SetParent(UIWidgetTopCenterContainerFrame)
-        --         self.ShadowsightTimer:SetPoint("TOP", UIWidgetTopCenterContainerFrame, "BOTTOM", 0, -4)
-        --     else
-        --         self.ShadowsightTimer:SetPoint("TOP", UIParent, "TOP", 0, -100)
-        --     end
-        --     if self.ShadowsightTimer.Icon1 then
-        --         self.ShadowsightTimer.Icon1:SetTexture(136155)
-        --         self.ShadowsightTimer.Icon1:Show()
-        --     end
-        --     if self.ShadowsightTimer.Icon2 then
-        --         self.ShadowsightTimer.Icon2:SetTexture(136155)
-        --         self.ShadowsightTimer.Icon2:Show()
-        --     end
-        --     self.ShadowsightTimer.Text:SetText("Shadowsight ready!")
-        --     self.ShadowsightTimer.Text:SetTextColor(1, 0.8, 0)
-        --     self.ShadowsightTimer:Show()
-        -- end)
 
         self:UnregisterEvent("PLAYER_LOGIN")
     elseif (event == "PLAYER_ENTERING_WORLD") then
@@ -1364,7 +1348,7 @@ function sArenaMixin:OnEvent(event, ...)
             C_Timer.After(0.5, function()
                 self:HandleArenaStart()
             end)
-            if db.profile.shadowSightTimer then
+            if db.profile.shadowSightTimer and not IsSoloShuffle() then
                 self:StartShadowsightTimer(shadowsightStartTime)
             end
         end
@@ -1542,31 +1526,27 @@ function sArenaMixin:StartShadowsightTimer(time)
         self.shadowsightTicker = nil
     end
 
-    -- Position the parent frame
     self.ShadowsightTimer:ClearAllPoints()
     if UIWidgetTopCenterContainerFrame then
-        print("intended")
         self.ShadowsightTimer:SetParent(UIWidgetTopCenterContainerFrame)
         self.ShadowsightTimer:SetPoint("TOP", UIWidgetTopCenterContainerFrame, "BOTTOM", 0, -4)
     else
-        print("top center screen")
         self.ShadowsightTimer:SetPoint("TOP", UIParent, "TOP", 0, -100)
-    end
-
-    -- Set up the icon texture
-    if self.ShadowsightTimer.Icon1 then
-        self.ShadowsightTimer.Icon1:SetTexture(136155)
-    end
-    if self.ShadowsightTimer.Icon2 then
-        self.ShadowsightTimer.Icon2:SetTexture(136155)
     end
 
     self.ShadowsightTimer:Show()
 
     local currentTime = GetTime()
-    self.shadowsightTimers[1] = currentTime + time
-    self.shadowsightTimers[2] = currentTime + time
-    self.shadowsightAvailable = 0
+    if isMidnight then
+        -- On Midnight, just track spawn time and when to hide (35s after spawn)
+        self.shadowsightTimers[1] = currentTime + time -- Time when eyes spawn
+        self.shadowsightTimers[2] = currentTime + time + 35 -- Time to hide (35s after spawn)
+        self.shadowsightAvailable = 0
+    else
+        self.shadowsightTimers[1] = currentTime + time
+        self.shadowsightTimers[2] = currentTime + time
+        self.shadowsightAvailable = 0
+    end
 
     self.shadowsightTicker = C_Timer.NewTicker(0.1, function()
         self:UpdateShadowsightDisplay()
@@ -1612,6 +1592,26 @@ end
 
 function sArenaMixin:UpdateShadowsightDisplay()
     local currentTime = GetTime()
+
+    if isMidnight then
+        -- On Midnight: Show countdown until spawn, then hide after 45 seconds
+        local spawnTime = self.shadowsightTimers[1]
+        local hideTime = self.shadowsightTimers[2]
+
+        if currentTime >= hideTime then
+            -- Hide after 35 seconds from spawn
+            self:ResetShadowsightTimer()
+            return
+        elseif currentTime >= spawnTime then
+            local iconTexture = "|T136155:15:15|t"
+            self.ShadowsightTimer.Text:SetText("Shadowsights Ready " .. iconTexture .. " " .. iconTexture)
+        else
+            local timeLeft = math.ceil(spawnTime - currentTime)
+            self.ShadowsightTimer.Text:SetText(string.format("Shadowsight spawns in %d sec", timeLeft))
+        end
+        return
+    end
+
     local availableCount = 0
     local shortestTimer = math.huge
 
@@ -1625,30 +1625,21 @@ function sArenaMixin:UpdateShadowsightDisplay()
 
     self.shadowsightAvailable = availableCount
 
-    if availableCount > 0 then
-        self.ShadowsightTimer.Text:SetText("Shadowsight ready!")
-        self.ShadowsightTimer.Text:SetTextColor(1, 0.8, 0)
-        if self.ShadowsightTimer.Icon1 then
-            self.ShadowsightTimer.Icon1:Show()
-        end
-        if self.ShadowsightTimer.Icon2 then
-            if availableCount >= 2 then
-                self.ShadowsightTimer.Icon2:Show()
-            else
-                self.ShadowsightTimer.Icon2:Hide()
-            end
-        end
+    local iconTexture = "|T136155:15:15|t"
+    local text = ""
+
+    if availableCount == 2 then
+        text = "Shadowsights Ready " .. iconTexture .. " " .. iconTexture
+    elseif availableCount == 1 then
+        text = "Shadowsight Ready " .. iconTexture
     elseif shortestTimer < math.huge then
         local timeLeft = math.ceil(shortestTimer - currentTime)
-        self.ShadowsightTimer.Text:SetText(string.format("Shadowsight spawns in %d sec", timeLeft))
-        self.ShadowsightTimer.Text:SetTextColor(1, 0.8, 0)
-        if self.ShadowsightTimer.Icon1 then
-            self.ShadowsightTimer.Icon1:Hide()
-        end
-        if self.ShadowsightTimer.Icon2 then
-            self.ShadowsightTimer.Icon2:Hide()
-        end
+        text = string.format("Shadowsight spawns in %d sec", timeLeft)
+    else
+        text = "Shadowsight"
     end
+
+    self.ShadowsightTimer.Text:SetText(text)
 end
 
 function sArenaMixin:ApplyPrototypeFont(frame)

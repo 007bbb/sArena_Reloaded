@@ -18,6 +18,7 @@ This version comes packed with many new features such as:
 *   Frames are now class colored by default in starting room (with optional setting to keep default gray).
 *   Castbars immediately hide for easier interrupts and only lingers if an interrupt lands and it will also say who interrupted it on the castbar for a short while.
 *   Shows duration on auras that don't have durations implemented by default from Blizzard (Smoke Bomb, Earthen Wall, Barrier, etc)
+*   Shadowsight timer.
 
 Other improvements:
 

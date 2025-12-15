@@ -104,6 +104,10 @@ L["Texture_Healer"] = "힐러 텍스처"
 L["Texture_Healer_Desc"] = "팁: 기본적으로 같은 직업이 여러 명일 때만 작동합니다. 항상 텍스처를 변경하려면 \"직업 중복 시에만\" 옵션을 꺼주세요."
 L["Texture_ClassStackingOnly"] = "직업 중복 시에만"
 L["Texture_ClassStackingOnly_Desc"] = "같은 직업이 여러 명일 때만 힐러 텍스처를 변경합니다.\n\n예를 들어 적 팀에 회복 드루이드와 야성 드루이드가 모두 있을 때입니다."
+L["Texture_Background"] = "배경 텍스처"
+L["Texture_Background_Desc"] = "체력/자원 바 하단의 텍스처입니다."
+L["Texture_BackgroundColor"] = "배경 색상"
+L["Texture_BackgroundColor_Desc"] = "체력/자원 바 하단의 색상입니다."
 
 ---------------------------------------
 -- Arena Frames Options

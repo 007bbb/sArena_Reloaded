@@ -201,8 +201,8 @@ function sArenaMixin:GetLayoutOptionsTable(layoutName)
                         bgTexture = {
                             order         = 4,
                             type          = "select",
-                            name          = "Background Texture",
-                            desc          = "Texture for the health/power bar underlays.",
+                            name          = L["Texture_Background"],
+                            desc          = L["Texture_Background_Desc"],
                             style         = "dropdown",
                             dialogControl = "LSM30_Statusbar",
                             values        = StatusbarValues,
@@ -228,8 +228,8 @@ function sArenaMixin:GetLayoutOptionsTable(layoutName)
                         bgColor = {
                             order = 5,
                             type  = "color",
-                            name  = "Background Color",
-                            desc  = "Color for the health/power bar underlays.",
+                            name  = L["Texture_BackgroundColor"],
+                            desc  = L["Texture_BackgroundColor_Desc"],
                             hasAlpha = true,
                             get   = function(info)
                                 local layout = info.handler.db.profile.layoutSettings[layoutName]

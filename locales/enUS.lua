@@ -104,6 +104,10 @@ L["Texture_Healer"] = "Healer Texture"
 L["Texture_Healer_Desc"] = "Tip: Only active when there is Class Stacking by default. Uncheck \"Class Stacking Only\" if you want it to always change the texture."
 L["Texture_ClassStackingOnly"] = "Class Stacking Only"
 L["Texture_ClassStackingOnly_Desc"] = "Only change the Healer texture when there is class stacking.\n\nFor example when there is both a Resto and a Feral Druid on the enemy team."
+L["Texture_Background"] = "Background Texture"
+L["Texture_Background_Desc"] = "Texture for the health/power bar underlays."
+L["Texture_BackgroundColor"] = "Background Color"
+L["Texture_BackgroundColor_Desc"] = "Color for the health/power bar underlays."
 
 ---------------------------------------
 -- Arena Frames Options

@@ -198,6 +198,59 @@ function sArenaMixin:GetLayoutOptionsTable(layoutName)
                             end,
                             width = "75%",
                         },
+                        bgTexture = {
+                            order         = 4,
+                            type          = "select",
+                            name          = "Background Texture",
+                            desc          = "Texture for the health/power bar underlays.",
+                            style         = "dropdown",
+                            dialogControl = "LSM30_Statusbar",
+                            values        = StatusbarValues,
+                            get           = function(info)
+                                local layout = info.handler.db.profile.layoutSettings[layoutName]
+                                local t = layout.textures
+                                return (t and t.bgTexture) or "Solid"
+                            end,
+                            set           = function(info, key)
+                                local layout = info.handler.db.profile.layoutSettings[layoutName]
+                                layout.textures = layout.textures or {
+                                    generalStatusBarTexture = "sArena Default",
+                                    healStatusBarTexture    = "sArena Default",
+                                    castbarStatusBarTexture = "sArena Default",
+                                    castbarUninterruptibleTexture = "sArena Default",
+                                    bgTexture = "Solid",
+                                }
+                                layout.textures.bgTexture = key
+                                info.handler:UpdateTextures()
+                            end,
+                            width = "75%",
+                        },
+                        bgColor = {
+                            order = 5,
+                            type  = "color",
+                            name  = "Background Color",
+                            desc  = "Color for the health/power bar underlays.",
+                            hasAlpha = true,
+                            get   = function(info)
+                                local layout = info.handler.db.profile.layoutSettings[layoutName]
+                                local c = layout.textures and layout.textures.bgColor or {0, 0, 0, 0.6}
+                                return c[1], c[2], c[3], c[4]
+                            end,
+                            set   = function(info, r, g, b, a)
+                                local layout = info.handler.db.profile.layoutSettings[layoutName]
+                                layout.textures = layout.textures or {
+                                    generalStatusBarTexture = "sArena Default",
+                                    healStatusBarTexture    = "sArena Default",
+                                    castbarStatusBarTexture = "sArena Default",
+                                    castbarUninterruptibleTexture = "sArena Default",
+                                    bgTexture = "Solid",
+                                    bgColor = {0, 0, 0, 0.6},
+                                }
+                                layout.textures.bgColor = {r, g, b, a}
+                                info.handler:UpdateTextures()
+                            end,
+                            width = 1.5,
+                        },
                     },
                 },
                 other = {
@@ -2442,14 +2495,14 @@ function sArenaMixin:UpdateFrameSettings(db, info, val)
     local spacing = db.spacing
 
     for i = 1, sArenaMixin.maxArenaOpponents do
-        local text = self["arena" .. i].ClassIconCooldown.Text
+        local text = self["arena" .. i].ClassIcon.Cooldown.Text
         local layoutCF = (self.layoutdb and self.layoutdb.changeFont)
         local fontToUse = text.fontFile
         if layoutCF then
             fontToUse = LSM:Fetch(LSM.MediaType.FONT, self.layoutdb.cdFont)
         end
         text:SetFont(fontToUse, db.classIconFontSize, "OUTLINE")
-        local sArenaText = self["arena" .. i].ClassIconCooldown.sArenaText
+        local sArenaText = self["arena" .. i].ClassIcon.Cooldown.sArenaText
         if sArenaText then
             sArenaText:SetFont(fontToUse, db.classIconFontSize, "OUTLINE")
         end
@@ -2979,7 +3032,7 @@ function sArenaMixin:UpdateDRSettings(db, info, val)
                                 drFrame.Cooldown:SetDrawSwipe(false)
                                 drFrame.Cooldown:SetDrawEdge(false)
                             else
-                                drFrame.Cooldown:SetSwipeColor(0, 0, 0, 0.5)
+                                drFrame.Cooldown:SetSwipeColor(0, 0, 0, 0.55)
                                 drFrame.Cooldown:SetDrawSwipe(true)
                                 drFrame.Cooldown:SetDrawEdge(not disableSwipeEdge)
                             end
@@ -3515,6 +3568,7 @@ function sArenaMixin:UpdateDRSettings(db, info, val)
             dr:SetSize(size, size)
             dr.Border:SetPoint("TOPLEFT", dr, "TOPLEFT", -borderSize, borderSize)
             dr.Border:SetPoint("BOTTOMRIGHT", dr, "BOTTOMRIGHT", borderSize, -borderSize)
+            dr.Cooldown:SetSwipeColor(0, 0, 0, 0.55)
 
             local text = dr.Cooldown.Text
             local layoutCF = (self.layoutdb and self.layoutdb.changeFont)
@@ -3644,7 +3698,7 @@ function sArenaMixin:UpdateDRSettings(db, info, val)
                 if not dr.Boverlay then
                     dr.Boverlay = CreateFrame("Frame", nil, dr)
                     dr.Boverlay:SetFrameStrata("MEDIUM")
-                    dr.Boverlay:SetFrameLevel(6)
+                    dr.Boverlay:SetFrameLevel(26)
                 end
                 dr.Boverlay:Show()
                 dr.Border:SetParent(dr.Boverlay)
@@ -3847,7 +3901,7 @@ end
 function sArenaFrameMixin:UpdateClassIconCooldownReverse()
     local reverse = self.parent.db.profile.invertClassIconCooldown
 
-    self.ClassIconCooldown:SetReverse(reverse)
+    self.ClassIcon.Cooldown:SetReverse(reverse)
 end
 
 function sArenaFrameMixin:UpdateTrinketRacialCooldownReverse()
@@ -3861,13 +3915,13 @@ function sArenaFrameMixin:UpdateClassIconSwipeSettings()
     local disableSwipe = self.parent.db.profile.disableClassIconSwipe
     local disableSwipeEdge = self.parent.db.profile.disableSwipeEdge
 
-    if self.ClassIconCooldown then
+    if self.ClassIcon.Cooldown then
         if disableSwipe then
-            self.ClassIconCooldown:SetDrawSwipe(false)
-            self.ClassIconCooldown:SetDrawEdge(false)
+            self.ClassIcon.Cooldown:SetDrawSwipe(false)
+            self.ClassIcon.Cooldown:SetDrawEdge(false)
         else
-            self.ClassIconCooldown:SetDrawSwipe(true)
-            self.ClassIconCooldown:SetDrawEdge(not disableSwipeEdge)
+            self.ClassIcon.Cooldown:SetDrawSwipe(true)
+            self.ClassIcon.Cooldown:SetDrawEdge(not disableSwipeEdge)
         end
     end
 end
@@ -3900,7 +3954,7 @@ end
 function sArenaFrameMixin:UpdateSwipeEdgeSettings()
     local disableEdge = self.parent.db.profile.disableSwipeEdge
 
-    self.ClassIconCooldown:SetDrawEdge(not disableEdge)
+    self.ClassIcon.Cooldown:SetDrawEdge(not disableEdge)
     self.Trinket.Cooldown:SetDrawEdge(not disableEdge)
     self.Racial.Cooldown:SetDrawEdge(not disableEdge)
 end
@@ -4531,12 +4585,12 @@ else
                                             info.handler.db.profile.hideClassIcon = val
                                             for i = 1, sArenaMixin.maxArenaOpponents do
                                                 if val then
-                                                    info.handler["arena" .. i].ClassIcon:SetTexture(nil)
+                                                    info.handler["arena" .. i].ClassIcon.Texture:SetTexture(nil)
                                                 else
                                                     if info.handler["arena" .. i].replaceClassIcon then
-                                                        info.handler["arena" .. i].ClassIcon:SetTexture(info.handler["arena" .. i].tempSpecIcon)
+                                                        info.handler["arena" .. i].ClassIcon.Texture:SetTexture(info.handler["arena" .. i].tempSpecIcon)
                                                     else
-                                                        info.handler["arena" .. i].ClassIcon:SetTexture(info.handler.classIcons[info.handler["arena" .. i].tempClass])
+                                                        info.handler["arena" .. i].ClassIcon.Texture:SetTexture(info.handler.classIcons[info.handler["arena" .. i].tempClass])
                                                     end
                                                 end
                                             end

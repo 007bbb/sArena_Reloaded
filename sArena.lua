@@ -515,12 +515,16 @@ function sArenaMixin:UpdateTextures()
         healStatusBarTexture      = "sArena Stripes",
         castbarStatusBarTexture   = "sArena Default",
         castbarUninterruptibleTexture = "sArena Default",
+        bgTexture = "Solid",
+        bgColor = {0, 0, 0, 0.6},
     }
 
     local castTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, texKeys.castbarStatusBarTexture)
     local castUninterruptibleTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, texKeys.castbarUninterruptibleTexture or texKeys.castbarStatusBarTexture)
     local dpsTexture     = LSM:Fetch(LSM.MediaType.STATUSBAR, texKeys.generalStatusBarTexture)
     local healerTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, texKeys.healStatusBarTexture)
+    local bgTexture = LSM:Fetch(LSM.MediaType.STATUSBAR, texKeys.bgTexture or "Solid")
+    local bgColor = texKeys.bgColor or {0, 0, 0, 0.6}
     local modernCastbars            = layout.castBar.useModernCastbars
     local keepDefaultModernTextures = layout.castBar.keepDefaultModernTextures
     local interruptStatusColorOn     = layout.castBar.interruptStatusColorOn
@@ -559,6 +563,16 @@ function sArenaMixin:UpdateTextures()
 
         frame.HealthBar:SetStatusBarTexture(textureToUse)
         frame.PowerBar:SetStatusBarTexture(dpsTexture)
+
+        -- Set background texture and color
+        if frame.HealthBar.hpUnderlay then
+            frame.HealthBar.hpUnderlay:SetTexture(bgTexture)
+            frame.HealthBar.hpUnderlay:SetVertexColor(bgColor[1], bgColor[2], bgColor[3], bgColor[4])
+        end
+        if frame.PowerBar.ppUnderlay then
+            frame.PowerBar.ppUnderlay:SetTexture(bgTexture)
+            frame.PowerBar.ppUnderlay:SetVertexColor(bgColor[1], bgColor[2], bgColor[3], bgColor[4])
+        end
 
         frame.HealthBar:SetReverseFill(reverseBarsFill)
         frame.PowerBar:SetReverseFill(reverseBarsFill)
@@ -1609,7 +1623,7 @@ function sArenaMixin:SetupCustomCD()
         local frame = self["arena" .. i]
 
         -- Class icon cooldown
-        self:CreateCustomCooldown(frame.ClassIconCooldown, self.db.profile.showDecimalsClassIcon)
+        self:CreateCustomCooldown(frame.ClassIcon.Cooldown, self.db.profile.showDecimalsClassIcon)
 
         -- DR frames
         for _, category in ipairs(self.drCategories) do
@@ -1645,7 +1659,7 @@ function sArenaFrameMixin:DarkModeFrame()
     local racialBorder = self.Racial.Border
     local dispelBorder = self.Dispel.Border
     local castBorder = self.CastBar.Border
-    local classIconBorder = self.ClassIcon.Border
+    local classIconBorder = self.ClassIcon.Texture.Border
     local castBackground = self.CastBar.Background
 
     if frameTexture then
@@ -1716,7 +1730,7 @@ function sArenaFrameMixin:ClassColorFrameTexture()
     local racialBorder = self.Racial.Border
     local dispelBorder = self.Dispel.Border
     local castBorder = self.CastBar.Border
-    local classIconBorder = self.ClassIcon.Border
+    local classIconBorder = self.ClassIcon.Texture.Border
 
     if classIconBorder then
         classIconBorder:SetDesaturated(true)
@@ -1879,9 +1893,9 @@ function sArenaFrameMixin:UpdateFrameColors()
                 self.SpecIcon.Border:SetVertexColor(1, 1, 1)
             end
         end
-        if self.ClassIcon.Border then
-            self.ClassIcon.Border:SetDesaturated(false)
-            self.ClassIcon.Border:SetVertexColor(1, 1, 1)
+        if self.ClassIcon.Texture.Border then
+            self.ClassIcon.Texture.Border:SetDesaturated(false)
+            self.ClassIcon.Texture.Border:SetVertexColor(1, 1, 1)
         end
         if self.CastBar.Border then
             self.CastBar.Border:SetDesaturated(false)
@@ -2085,14 +2099,28 @@ function sArenaMixin:SetMouseState(state)
         frame.Trinket:EnableMouse(state)
         frame.Racial:EnableMouse(state)
         frame.Dispel:EnableMouse(state)
+        frame.ClassIcon:EnableMouse(state)
 
         for _, child in pairs({frame.WidgetOverlay:GetChildren()}) do
             child:EnableMouse(state)
         end
+
+        if isTBC and not InCombatLockdown() then
+            local shouldEnableMouse
+            if state then
+                -- Outside arena: always clickable
+                shouldEnableMouse = true
+            else
+                -- Inside arena: only clickable up to party size
+                local partySize = GetNumGroupMembers() or 2
+                shouldEnableMouse = (i <= partySize)
+            end
+
+            frame:EnableMouse(shouldEnableMouse)
+        end
     end
 end
 
--- Arena Frames
 
 local function ResetTexture(texturePool, t)
     if (texturePool) then
@@ -2153,8 +2181,10 @@ function sArenaFrameMixin:CreateCastBar()
 end
 
 function sArenaFrameMixin:CreateDRFrames()
+    local id = self:GetID()
     for _, category in ipairs(sArenaMixin.drCategories) do
-        local drFrame = CreateFrame("Frame", nil, self, "sArenaDRFrameTemplate")
+        local name = "sArenaDRFrame" .. id .. category
+        local drFrame = CreateFrame("Frame", name, self, "sArenaDRFrameTemplate")
         self[category] = drFrame
     end
 end
@@ -2247,12 +2277,12 @@ function sArenaFrameMixin:OnLoad()
                 if tex == "INTERFACE\\ICONS\\INV_MISC_QUESTIONMARK.BLP" or (db and db.profile.disableAurasOnClassIcon) then
                     self:UpdateClassIcon(true)
                 else
-                    self.ClassIcon:SetTexture(tex)
+                    self.ClassIcon.Texture:SetTexture(tex)
                 end
             end)
             hooksecurefunc(debuffFrame.Cooldown, "SetCooldown", function(_, start, duration)
                 if (db and db.profile.disableAurasOnClassIcon) then return end
-                self.ClassIconCooldown:SetCooldown(start, duration)
+                self.ClassIcon.Cooldown:SetCooldown(start, duration)
             end)
         end
         local trinketFrame = blizzArenaFrame.CcRemoverFrame
@@ -2886,6 +2916,7 @@ function sArenaFrameMixin:UpdatePlayer(unitEvent)
         self:UpdateNameColor()
         self.Name:SetShown(true)
     end
+    self.SpecNameText:SetText(self.specName or "")
 
     self:UpdateStatusTextVisible()
     self:SetStatusText()
@@ -2913,7 +2944,11 @@ function sArenaFrameMixin:UpdatePlayer(unitEvent)
         self:SetAlpha(1)
     end
 
-    self:Show()
+    -- Workaround to show frames in TBC in combat.
+    -- Does not actualy call Show() but SetAlpha() on TBC.
+    if isTBC then
+        self:Show()
+    end
 end
 
 function sArenaFrameMixin:SetMysteryPlayer()
@@ -3021,10 +3056,10 @@ end
 
 function sArenaFrameMixin:UpdateClassIcon(continue)
 	if (self.currentAuraSpellID and self.currentAuraDuration > 0 and self.currentClassIconStartTime ~= self.currentAuraStartTime) then
-		self.ClassIconCooldown:SetCooldown(self.currentAuraStartTime, self.currentAuraDuration)
+		self.ClassIcon.Cooldown:SetCooldown(self.currentAuraStartTime, self.currentAuraDuration)
 		self.currentClassIconStartTime = self.currentAuraStartTime
 	elseif (self.currentAuraDuration == 0) then
-		self.ClassIconCooldown:Clear()
+		self.ClassIcon.Cooldown:Clear()
 		self.currentClassIconStartTime = 0
 	end
 
@@ -3060,17 +3095,17 @@ function sArenaFrameMixin:UpdateClassIcon(continue)
         end
 
         if useHealerTexture then
-            self.ClassIcon:SetAtlas("UI-LFG-RoleIcon-Healer")
+            self.ClassIcon.Texture:SetAtlas("UI-LFG-RoleIcon-Healer")
         else
-            self.ClassIcon:SetTexture(texture)
+            self.ClassIcon.Texture:SetTexture(texture)
         end
 
         local cropType = useHealerTexture and "healer" or "class"
-        self:SetTextureCrop(self.ClassIcon, db.profile.layoutSettings[db.profile.currentLayout].cropIcons, cropType)
+        self:SetTextureCrop(self.ClassIcon.Texture, db.profile.layoutSettings[db.profile.currentLayout].cropIcons, cropType)
 		return
 	end
-	self:SetTextureCrop(self.ClassIcon, db and db.profile.layoutSettings[db.profile.currentLayout].cropIcons, "class")
-	self.ClassIcon:SetTexture(texture)
+	self:SetTextureCrop(self.ClassIcon.Texture, db and db.profile.layoutSettings[db.profile.currentLayout].cropIcons, "class")
+	self.ClassIcon.Texture:SetTexture(texture)
     if self.ClassIconMsq then
         self.ClassIconMsq:Show()
     end
@@ -3115,7 +3150,7 @@ function sArenaFrameMixin:ResetLayout()
     self.currentClassIconStartTime = 0
     self.oldNameColor = nil
 
-    ResetTexture(nil, self.ClassIcon)
+    ResetTexture(nil, self.ClassIcon.Texture)
     ResetStatusBar(self.HealthBar)
     ResetStatusBar(self.PowerBar)
     ResetStatusBar(self.CastBar)
@@ -3130,27 +3165,24 @@ function sArenaFrameMixin:ResetLayout()
         self.CastBar.BorderShield:SetTexture(330124)
     end
 
-    self.ClassIconCooldown:SetUseCircularEdge(false)
-    self.ClassIconCooldown:SetSwipeTexture(1)
-    self.AuraStacks:SetPoint("BOTTOMLEFT", self.ClassIcon, "BOTTOMLEFT", 2, 0)
+    self.ClassIcon.Cooldown:SetUseCircularEdge(false)
+    self.ClassIcon.Cooldown:SetSwipeTexture(1)
+    self.AuraStacks:SetPoint("BOTTOMLEFT", self.ClassIcon.Texture, "BOTTOMLEFT", 2, 0)
     self.AuraStacks:SetFont("Interface\\AddOns\\sArena_Reloaded\\Textures\\arialn.ttf", 13, "THICKOUTLINE")
     self.DispelStacks:SetPoint("BOTTOMLEFT", self.Dispel.Texture, "BOTTOMLEFT", 2, 0)
     self.DispelStacks:SetFont("Interface\\AddOns\\sArena_Reloaded\\Textures\\arialn.ttf", 15, "THICKOUTLINE")
 
-    self.ClassIconMask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask")
-    self.ClassIcon:RemoveMaskTexture(self.ClassIconMask)
-    self.ClassIcon:SetDrawLayer("BORDER", 1)
+    self.ClassIcon.Mask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask")
+    self.ClassIcon.Texture:RemoveMaskTexture(self.ClassIcon.Mask)
+    self.ClassIcon.Texture:SetDrawLayer("BORDER", 1)
+    self.ClassIcon.Texture:SetAllPoints(self.ClassIcon)
+    self.ClassIcon.Texture:Show()
     self.ClassIcon:SetScale(1)
     if self.frameTexture then
         self.frameTexture:SetDrawLayer("ARTWORK", 2)
         self.frameTexture:SetDesaturated(false)
         self.frameTexture:SetVertexColor(1, 1, 1)
         self.frameTexture:Hide()
-    end
-
-    if self.ppUnderlay then
-        self.hpUnderlay:SetColorTexture(0, 0, 0, 0.65)
-        self.ppUnderlay:SetColorTexture(0, 0, 0, 0.65)
     end
 
     if self.CastBar.Border then
@@ -3167,7 +3199,7 @@ function sArenaFrameMixin:ResetLayout()
         self.Dispel.Border:SetVertexColor(1, 1, 1)
     end
 
-    self.ClassIcon.useModernBorder = nil
+    self.ClassIcon.Texture.useModernBorder = nil
     self.Trinket.useModernBorder = nil
     self.Racial.useModernBorder = nil
     self.Dispel.useModernBorder = nil
@@ -3209,7 +3241,7 @@ function sArenaFrameMixin:ResetLayout()
     end
     self:SetTextureCrop(f.Texture, cropIcons)
 
-    f = self.ClassIcon
+    f = self.ClassIcon.Texture
     self:SetTextureCrop(f, cropIcons)
 
     f = self.Racial
@@ -3778,7 +3810,7 @@ function sArenaMixin:Test()
             local ccSpells = {408, 2139, 33786, 118, 122}
             local ccIndex = ((i - 1) % #ccSpells) + 1
             local spellTexture = GetSpellTexture(ccSpells[ccIndex])
-            frame.ClassIcon:SetTexture(spellTexture)
+            frame.ClassIcon.Texture:SetTexture(spellTexture)
             if frame.ClassIconMsq then
                 frame.ClassIconMsq:Hide()
             end
@@ -3799,14 +3831,14 @@ function sArenaMixin:Test()
                 if frame.SpecIconMsq then
                     frame.SpecIconMsq:Hide()
                 end
-                frame.ClassIcon:SetTexture(data.specIcon, true)
+                frame.ClassIcon.Texture:SetTexture(data.specIcon, true)
             else
                 frame.SpecIcon:Show()
                 frame.SpecIcon.Texture:SetTexture(data.specIcon)
                 if frame.SpecIconMsq then
                     frame.SpecIconMsq:Show()
                 end
-                frame.ClassIcon:SetTexture(self.classIcons[data.class])
+                frame.ClassIcon.Texture:SetTexture(self.classIcons[data.class])
             end
             if frame.ClassIconMsq then
                 frame.ClassIconMsq:Show()
@@ -3815,18 +3847,18 @@ function sArenaMixin:Test()
 
         local cropType
         if db.profile.replaceHealerIcon and frame.isHealer then
-            frame.ClassIcon:SetAtlas("UI-LFG-RoleIcon-Healer")
+            frame.ClassIcon.Texture:SetAtlas("UI-LFG-RoleIcon-Healer")
             cropType = "healer"
         else
             cropType = "class"
         end
 
-        frame:SetTextureCrop(frame.ClassIcon, cropIcons, cropType)
+        frame:SetTextureCrop(frame.ClassIcon.Texture, cropIcons, cropType)
 
         frame.SpecNameText:SetText(data.specName)
         frame.SpecNameText:SetShown(db.profile.layoutSettings[db.profile.currentLayout].showSpecManaText)
 
-        frame.ClassIconCooldown:SetCooldown(currTime, math.random(5, 35))
+        frame.ClassIcon.Cooldown:SetCooldown(currTime, math.random(5, 35))
 
         frame.Name:SetText((db.profile.showArenaNumber and "arena" .. i) or data.name)
         frame.Name:SetShown(db.profile.showNames or db.profile.showArenaNumber)

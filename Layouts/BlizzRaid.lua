@@ -97,6 +97,8 @@ layout.defaultSettings = {
         healStatusBarTexture          = "sArena Stripes",
         castbarStatusBarTexture       = "sArena Default",
         castbarUninterruptibleTexture = "sArena Default",
+        bgTexture = "Solid",
+        bgColor = {0, 0, 0, 0.6},
     },
     retextureHealerClassStackOnly = true,
 
@@ -134,6 +136,11 @@ local function CreatePixelTextureBorder(parent, target, key, size, offset)
 
     if not parent[key] then
         local holder = CreateFrame("Frame", nil, parent)
+        if key == "classIcon" then
+            holder:SetFrameLevel(parent:GetFrameLevel() + 8)
+        else
+            holder:SetFrameLevel(parent:GetFrameLevel() + 1)
+        end
         holder:SetIgnoreParentScale(true)
         parent[key] = holder
 
@@ -265,8 +272,7 @@ function sArenaMixin:RemovePixelBorders()
         hideBorder(frame.CastBar, "castBar")
         hideBorder(frame.CastBar, "castBarIcon")
 
-        -- Reset ClassIcon to default draw layer and scale
-        frame.ClassIcon:SetDrawLayer("BORDER", 1)
+        -- Reset ClassIcon scale
         frame.ClassIcon:SetScale(1)
 
         -- Reset cast bar icon position
@@ -511,17 +517,16 @@ function layout:Initialize(frame)
     frame.Dispel:SetSize(41, 41)
     frame.Name:SetTextColor(1,1,1)
     frame.SpecNameText:SetTextColor(1,1,1)
-    frame.ClassIconCooldown:SetFrameStrata("HIGH")
-    frame.ClassIconCooldown:SetUseCircularEdge(false)
-    frame.ClassIconCooldown:SetSwipeTexture(1)
+    frame.ClassIcon.Cooldown:SetUseCircularEdge(false)
+    frame.ClassIcon.Cooldown:SetSwipeTexture(1)
 
 
     frame.Trinket.Cooldown:SetSwipeTexture(1)
-    frame.Trinket.Cooldown:SetSwipeColor(0, 0, 0, 0.5)
+    frame.Trinket.Cooldown:SetSwipeColor(0, 0, 0, 0.55)
     frame.Trinket.Cooldown:SetUseCircularEdge(false)
 
     frame.Racial.Cooldown:SetSwipeTexture(1)
-    frame.Racial.Cooldown:SetSwipeColor(0, 0, 0, 0.5)
+    frame.Racial.Cooldown:SetSwipeColor(0, 0, 0, 0.55)
     frame.Racial.Cooldown:SetUseCircularEdge(false)
 
     if not frame.Trinket.TrinketPixelBorderHook then
@@ -618,9 +623,6 @@ function layout:Initialize(frame)
     frame.ClassIcon:SetScale(classIconScale)
     frame.ClassIcon:Show()
 
-    -- Raise ClassIcon above healthbar for overlaying
-    frame.ClassIcon:SetDrawLayer("OVERLAY", 1)
-
     local f = frame.Name
     f:SetJustifyH("LEFT")
     --f:SetPoint("LEFT", frame.HealthBar, "LEFT", 3, -1)
@@ -636,24 +638,6 @@ function layout:Initialize(frame)
     frame.PowerText:SetAlpha(frame.parent.db.profile.hidePowerText and 0 or 1)
 
     frame.SpecNameText:SetPoint("LEFT", frame.PowerBar, "LEFT", 3, 0)
-
-    -- Health bar underlay
-    if not frame.hpUnderlay then
-        frame.hpUnderlay = frame:CreateTexture(nil, "BACKGROUND", nil, 1)
-        frame.hpUnderlay:SetPoint("TOPLEFT", frame.HealthBar, "TOPLEFT")
-        frame.hpUnderlay:SetPoint("BOTTOMRIGHT", frame.HealthBar, "BOTTOMRIGHT")
-        frame.hpUnderlay:SetColorTexture(0, 0, 0, 0.65)
-        frame.hpUnderlay:Show()
-    end
-
-    -- Power bar underlay
-    if not frame.ppUnderlay then
-        frame.ppUnderlay = frame:CreateTexture(nil, "BACKGROUND", nil, 1)
-        frame.ppUnderlay:SetPoint("TOPLEFT", frame.PowerBar, "TOPLEFT")
-        frame.ppUnderlay:SetPoint("BOTTOMRIGHT", frame.PowerBar, "BOTTOMRIGHT")
-        frame.ppUnderlay:SetColorTexture(0, 0, 0, 0.65)
-        frame.ppUnderlay:Show()
-    end
 
     self:UpdateOrientation(frame)
 end
@@ -777,8 +761,8 @@ function layout:UpdateOrientation(frame)
 
     healthBar:ClearAllPoints()
     powerBar:ClearAllPoints()
-    classIcon:ClearAllPoints()
-    
+    frame.ClassIcon:ClearAllPoints()
+
     -- Apply classIcon settings
     local classIconSettings = self.db.classIcon or { posX = 0, posY = 0, scale = 1 }
     local baseSize = self.db.height - 4

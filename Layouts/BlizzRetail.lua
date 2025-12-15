@@ -84,6 +84,8 @@ layout.defaultSettings = {
         healStatusBarTexture          = "sArena Stripes 2",
         castbarStatusBarTexture       = "sArena Default",
         castbarUninterruptibleTexture = "sArena Default",
+        bgTexture = "Solid",
+        bgColor = {0, 0, 0, 0.6},
     },
     retextureHealerClassStackOnly = true,
 
@@ -191,16 +193,16 @@ function layout:Initialize(frame)
     playerName:SetDrawLayer("OVERLAY", 6)
 
     -- portrait icon
-    frame.ClassIconCooldown:SetSwipeTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask")
-    frame.ClassIconCooldown:SetEdgeTexture("Interface\\Cooldown\\edge")
-    frame.ClassIconCooldown:SetUseCircularEdge(true)
+    frame.ClassIcon.Cooldown:SetSwipeTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask")
+    frame.ClassIcon.Cooldown:SetEdgeTexture("Interface\\Cooldown\\edge")
+    frame.ClassIcon.Cooldown:SetUseCircularEdge(true)
     frame.ClassIcon:SetSize(55, 55)
     frame.ClassIcon:Show()
-    frame.ClassIcon:SetTexCoord(0.05, 0.95, 0.1, 0.9)
-    frame.ClassIcon:AddMaskTexture(frame.ClassIconMask)
-    frame.ClassIconMask:ClearAllPoints()
-    frame.ClassIconMask:SetPoint("CENTER", frame.ClassIcon, 0,1)
-    frame.ClassIconMask:SetSize(60, 57)
+    frame.ClassIcon.Texture:SetTexCoord(0.05, 0.95, 0.1, 0.9)
+    frame.ClassIcon.Texture:AddMaskTexture(frame.ClassIcon.Mask)
+    frame.ClassIcon.Mask:ClearAllPoints()
+    frame.ClassIcon.Mask:SetPoint("CENTER", frame.ClassIcon, 0,1)
+    frame.ClassIcon.Mask:SetSize(60, 57)
 
     -- trinket
     local trinket = frame.Trinket
@@ -349,23 +351,6 @@ function layout:Initialize(frame)
     f:SetSize(42, 42)
     f:SetDrawLayer("OVERLAY", 7)
 
-    if not frame.hpUnderlay then
-        frame.hpUnderlay = frame:CreateTexture(nil, "BACKGROUND", nil, 1)
-        frame.hpUnderlay:SetPoint("TOPLEFT", frame.HealthBar, "TOPLEFT")
-        frame.hpUnderlay:SetPoint("BOTTOMRIGHT", frame.HealthBar, "BOTTOMRIGHT")
-        frame.hpUnderlay:Show()
-    end
-
-    if not frame.ppUnderlay then
-        frame.ppUnderlay = frame:CreateTexture(nil, "BACKGROUND", nil, 1)
-        frame.ppUnderlay:SetPoint("TOPLEFT", frame.PowerBar, "TOPLEFT")
-        frame.ppUnderlay:SetPoint("BOTTOMRIGHT", frame.PowerBar, "BOTTOMRIGHT")
-        frame.ppUnderlay:Show()
-    end
-
-    frame.hpUnderlay:SetColorTexture(0, 0, 0, 0.55)
-    frame.ppUnderlay:SetColorTexture(0, 0, 0, 0.55)
-
     local frameTexture = frame.frameTexture
     frameTexture:ClearAllPoints()
     frameTexture:SetAllPoints(frame)
@@ -394,7 +379,7 @@ function layout:UpdateOrientation(frame)
     name:ClearAllPoints()
     healthBar:ClearAllPoints()
     powerBar:ClearAllPoints()
-    classIcon:ClearAllPoints()
+    frame.ClassIcon:ClearAllPoints()
     specName:ClearAllPoints()
 
     if self.db.widgets then
@@ -511,7 +496,7 @@ function layout:UpdateOrientation(frame)
     	healthBar:SetPoint("TOPRIGHT", -3, -23)
         powerBar:SetSize(136, 11)
         powerBar:SetPoint("TOPLEFT", healthBar, "BOTTOMLEFT", -8, 0)
-        classIcon:SetPoint("TOPLEFT", 8, -4)
+        frame.ClassIcon:SetPoint("TOPLEFT", 8, -4)
     else
     	frameTexture:SetTexCoord(0, 1, 0, 1)
     	healthBar:SetSize(128, 21)
@@ -519,7 +504,7 @@ function layout:UpdateOrientation(frame)
     	healthBar:SetPoint("TOPLEFT", 3, -23)
     	powerBar:SetSize(137, 11)
     	powerBar:SetPoint("TOPLEFT", healthBar, "BOTTOMLEFT", 0, 0)
-    	classIcon:SetPoint("TOPRIGHT", -8, -4)
+    	frame.ClassIcon:SetPoint("TOPRIGHT", -8, -4)
     end
 end
 

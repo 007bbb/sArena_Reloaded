@@ -85,6 +85,8 @@ layout.defaultSettings = {
         healStatusBarTexture          = "sArena Stripes",
         castbarStatusBarTexture       = "sArena Default",
         castbarUninterruptibleTexture = "sArena Default",
+        bgTexture = "Solid",
+        bgColor = {0, 0, 0, 0.6},
     },
     retextureHealerClassStackOnly = true,
 
@@ -208,10 +210,10 @@ function layout:Initialize(frame)
     frame.SpecNameText:SetTextColor(1,1,1)
 
     frame.Trinket.Cooldown:SetSwipeTexture(1)
-    frame.Trinket.Cooldown:SetSwipeColor(0, 0, 0, 0.5)
+    frame.Trinket.Cooldown:SetSwipeColor(0, 0, 0, 0.55)
 
     frame.Dispel.Cooldown:SetSwipeTexture(1)
-    frame.Dispel.Cooldown:SetSwipeColor(0, 0, 0, 0.5)
+    frame.Dispel.Cooldown:SetSwipeColor(0, 0, 0, 0.55)
 
     frame.PowerBar:SetHeight(self.db.powerBarHeight)
 
@@ -230,24 +232,6 @@ function layout:Initialize(frame)
 
     frame.PowerText:SetAlpha(frame.parent.db.profile.hidePowerText and 0 or 1)
 
-    -- Health bar underlay
-    if not frame.hpUnderlay then
-        frame.hpUnderlay = frame:CreateTexture(nil, "BACKGROUND", nil, 1)
-        frame.hpUnderlay:SetPoint("TOPLEFT", frame.HealthBar, "TOPLEFT")
-        frame.hpUnderlay:SetPoint("BOTTOMRIGHT", frame.HealthBar, "BOTTOMRIGHT")
-        frame.hpUnderlay:SetColorTexture(0, 0, 0, 0.65)
-        frame.hpUnderlay:Show()
-    end
-
-    -- Power bar underlay
-    if not frame.ppUnderlay then
-        frame.ppUnderlay = frame:CreateTexture(nil, "BACKGROUND", nil, 1)
-        frame.ppUnderlay:SetPoint("TOPLEFT", frame.PowerBar, "TOPLEFT")
-        frame.ppUnderlay:SetPoint("BOTTOMRIGHT", frame.PowerBar, "BOTTOMRIGHT")
-        frame.ppUnderlay:SetColorTexture(0, 0, 0, 0.65)
-        frame.ppUnderlay:Show()
-    end
-
     self:UpdateOrientation(frame)
 end
 
@@ -263,7 +247,7 @@ function layout:UpdateOrientation(frame)
 
     healthBar:ClearAllPoints()
     powerBar:ClearAllPoints()
-    classIcon:ClearAllPoints()
+    frame.ClassIcon:ClearAllPoints()
     frame.ClassIcon:SetSize(self.db.height-4, self.db.height-4)
 
     if self.db.widgets then
@@ -380,7 +364,7 @@ function layout:UpdateOrientation(frame)
         powerBar:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 0, 2)
         powerBar:SetPoint("LEFT", classIcon, "RIGHT", 0, 0)
 
-        classIcon:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, -2)
+        frame.ClassIcon:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, -2)
     else
         healthBar:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, -2)
         healthBar:SetPoint("BOTTOMRIGHT", powerBar, "TOPRIGHT")
@@ -388,7 +372,7 @@ function layout:UpdateOrientation(frame)
         powerBar:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 0, 2)
         powerBar:SetPoint("RIGHT", classIcon, "LEFT", 0, 0)
 
-        classIcon:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 0, -2)
+        frame.ClassIcon:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 0, -2)
     end
 end
 

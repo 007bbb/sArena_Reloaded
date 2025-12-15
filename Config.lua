@@ -2878,7 +2878,7 @@ function sArenaMixin:InitializeDRFrames()
 
                     drFrame.DRText = drFrame.DRTextFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
                     drFrame.DRText:SetPoint(drTextAnchor, drTextOffsetX, drTextOffsetY)
-                    drFrame.DRText:SetFont("Interface\\AddOns\\sArena_MoP\\Textures\\arialn.ttf", 14, "OUTLINE")
+                    drFrame.DRText:SetFont("Interface\\AddOns\\sArena_Reloaded\\Textures\\arialn.ttf", 14, "OUTLINE")
                     drFrame.DRText:SetScale(drTextSize)
                     drFrame.DRText:SetTextColor(0, 1, 0)
                     drFrame.DRText:SetText("½")
@@ -2888,9 +2888,11 @@ function sArenaMixin:InitializeDRFrames()
                         drFrame.DRText:SetAlphaFromBoolean(SetShown, 0, 1)
                     end)
 
+                    -- TODO: figure out method to color dr text with new dr text severity color setting on midnight
+
                     drFrame.DRText2 = drFrame.DRTextFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
                     drFrame.DRText2:SetPoint(drTextAnchor, drTextOffsetX, drTextOffsetY)
-                    drFrame.DRText2:SetFont("Interface\\AddOns\\sArena_MoP\\Textures\\arialn.ttf", 14, "OUTLINE")
+                    drFrame.DRText2:SetFont("Interface\\AddOns\\sArena_Reloaded\\Textures\\arialn.ttf", 14, "OUTLINE")
                     drFrame.DRText2:SetScale(drTextSize)
                     drFrame.DRText2:SetTextColor(1, 0, 0)
                     drFrame.DRText2:SetText("%")
@@ -4946,6 +4948,27 @@ else
                                             info.handler.db.profile.decimalThreshold = val
                                             info.handler:UpdateDecimalThreshold()
                                             info.handler:SetupCustomCD()
+                                        end
+                                    },
+                                    colorDRCooldownText = {
+                                        order = 3,
+                                        name = "Color DR Cooldown Text by Severity",
+                                        desc = isMidnight and
+                                        "Colors the DR cooldown countdown text based on diminishing return severity.\n\n|cff00ff00Green|r for ½ diminish\n|cffff0000Red|r for immune" or
+                                        "Colors the DR cooldown countdown text based on diminishing return severity.\n\n|cff00ff00Green|r for ½ diminish\n|cffffff00Yellow|r for ¼ diminish\n|cffff0000Red|r for immune",
+                                        type = "toggle",
+                                        width = "full",
+                                        get = function(info) return info.handler.db.profile.colorDRCooldownText end,
+                                        set = function(info, val)
+                                            info.handler.db.profile.colorDRCooldownText = val
+                                            if not val then
+                                                for i = 1, sArenaMixin.maxArenaOpponents do
+                                                    local frame = info.handler["arena" .. i]
+                                                    frame:ResetDRCooldownTextColors()
+                                                end
+                                            end
+                                            info.handler:SetupCustomCD()
+                                            info.handler:Test()
                                         end
                                     },
                                 },

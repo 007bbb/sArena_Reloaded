@@ -13,6 +13,7 @@ sArenaMixin.defaultSettings = {
         showDecimalsDR = true,
         showDecimalsClassIcon = true,
         decimalThreshold = 6,
+        colorDRCooldownText = false,
         --darkMode = (BetterBlizzFramesDB and BetterBlizzFramesDB.darkModeUi) or C_AddOns.IsAddOnLoaded("FrameColor") or nil,
         forceShowTrinketOnHuman = not isRetail and true or nil,
         shadowSightTimer = isTBC and true or nil,
@@ -1757,7 +1758,12 @@ function sArenaMixin:CreateCustomCooldown(cooldown, showDecimals)
     cooldown:SetHideCountdownNumbers(hideNumbers)
 
     if showDecimals and not isMidnight then
-        cooldown:SetScript("OnUpdate", function()
+        local lastUpdate = 0
+        cooldown:SetScript("OnUpdate", function(self, elapsed)
+            lastUpdate = lastUpdate + elapsed
+            if lastUpdate < 0.1 then return end
+            lastUpdate = 0
+
             local start, duration = cooldown:GetCooldownTimes()
             start, duration = start / 1000, duration / 1000
             local remaining = (start + duration) - GetTime()
@@ -4207,7 +4213,7 @@ function sArenaMixin:Test()
 
                         fakeDRFrame.DRText = fakeDRFrame.DRTextFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
                         fakeDRFrame.DRText:SetPoint(drTextAnchor, drTextOffsetX, drTextOffsetY)
-                        fakeDRFrame.DRText:SetFont("Interface\\AddOns\\sArena_MoP\\Textures\\arialn.ttf", 14, "OUTLINE")
+                        fakeDRFrame.DRText:SetFont("Interface\\AddOns\\sArena_Reloaded\\Textures\\arialn.ttf", 14, "OUTLINE")
                         fakeDRFrame.DRText:SetScale(drTextSize)
                         if drIndex == 1 then
                             fakeDRFrame.DRText:SetTextColor(1, 0, 0)
@@ -4215,6 +4221,14 @@ function sArenaMixin:Test()
                         else
                             fakeDRFrame.DRText:SetTextColor(0, 1, 0)
                             fakeDRFrame.DRText:SetText("½")
+                        end
+
+                        if self.db.profile.colorDRCooldownText and fakeDRFrame.Cooldown.sArenaText then
+                            if drIndex == 1 then
+                                fakeDRFrame.Cooldown.sArenaText:SetTextColor(1, 0, 0, 1)
+                            else
+                                fakeDRFrame.Cooldown.sArenaText:SetTextColor(0, 1, 0, 1)
+                            end
                         end
 
                         if drIndex == 1 then
@@ -4306,6 +4320,10 @@ function sArenaMixin:Test()
                             drFrame.__MSQ_New_Normal:SetDesaturated(true)
                             drFrame.__MSQ_New_Normal:SetVertexColor(1, 0, 0, 1)
                         end
+
+                        if self.db.profile.colorDRCooldownText and drFrame.Cooldown.sArenaText then
+                            drFrame.Cooldown.sArenaText:SetTextColor(1, 0, 0, 1)
+                        end
                     else
                         local borderColor = blackDRBorder and { 0, 0, 0, 1 } or { 0, 1, 0, 1 }
                         local pixelBorderColor = blackDRBorder and { 0, 0, 0, 1 } or { 0, 1, 0, 1 }
@@ -4318,6 +4336,10 @@ function sArenaMixin:Test()
                         if drFrame.__MSQ_New_Normal then
                             drFrame.__MSQ_New_Normal:SetDesaturated(true)
                             drFrame.__MSQ_New_Normal:SetVertexColor(0, 1, 0, 1)
+                        end
+
+                        if self.db.profile.colorDRCooldownText and drFrame.Cooldown.sArenaText then
+                            drFrame.Cooldown.sArenaText:SetTextColor(0, 1, 0, 1)
                         end
                     end
                 end

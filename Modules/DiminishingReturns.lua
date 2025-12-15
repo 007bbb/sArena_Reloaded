@@ -153,6 +153,10 @@ function sArenaFrameMixin:FindDR(combatEvent, spellID)
 		drText:SetTextColor(unpack(severityColor[frame.severity]))
 	end
 
+	if self.parent.db.profile.colorDRCooldownText and frame.Cooldown.sArenaText then
+		frame.Cooldown.sArenaText:SetTextColor(unpack(severityColor[frame.severity]))
+	end
+
 	frame.severity = frame.severity + 1
 	if frame.severity > 3 then
 		frame.severity = 3
@@ -215,5 +219,14 @@ end
 function sArenaFrameMixin:ResetDR()
 	for i = 1, #drCategories do
 		self[drCategories[i]].Cooldown:Clear()
+	end
+end
+
+function sArenaFrameMixin:ResetDRCooldownTextColors()
+	for i = 1, #drCategories do
+		local drFrame = self[drCategories[i]]
+		if drFrame and drFrame.Cooldown.sArenaText then
+			drFrame.Cooldown.sArenaText:SetTextColor(1, 1, 1, 1)
+		end
 	end
 end

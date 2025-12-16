@@ -4,6 +4,7 @@ local isTBC = sArenaMixin.isTBC
 
 -- Older clients dont show opponents in spawn
 local isOldArena = sArenaMixin.isTBC or sArenaMixin.isWrath
+local isModernArena = isRetail or isMidnight -- For old trinkets
 
 sArenaMixin.layouts = {}
 sArenaMixin.defaultSettings = {
@@ -1045,6 +1046,23 @@ local function EnsureArenaFramesEnabled()
 
     if arenaFramesButton and arenaFramesButton.Button and not arenaFramesButton.Button:GetChecked() then
         arenaFramesButton.Button:Click()
+    end
+end
+
+local function GetFactionTrinketIconByRace(race)
+    local allianceRaces = {
+        ["Human"] = true,
+        ["Dwarf"] = true,
+        ["NightElf"] = true,
+        ["Gnome"] = true,
+        ["Draenei"] = true,
+        ["Worgen"] = true,
+    }
+
+    if allianceRaces[race] then
+        return 133452  -- Alliance trinket
+    else
+        return 133453  -- Horde trinket
     end
 end
 
@@ -3804,7 +3822,7 @@ local specTemplates = {
 
 local testPlayers = {
     { template = "BM_HUNTER", name = "Despytimes" },
-    { template = "BM_HUNTER", name = "Littlejimmy", racial = 132309, race = "Gnome" },
+    { template = "BM_HUNTER", name = "Littlejimmy", racial = 132309 },
     { template = "MM_HUNTER", name = "Jellybeans" },
     { template = "SURV_HUNTER", name = "Bicmex" },
     { template = "ELE_SHAMAN", name = "Bluecheese" },
@@ -4113,7 +4131,11 @@ function sArenaMixin:Test()
             elseif shouldForceHumanTrinket then
                 frame.Trinket.Texture:SetTexture(133452)
             else
-                frame.Trinket.Texture:SetTexture(sArenaMixin.trinketTexture)
+                if not isModernArena then
+                    frame.Trinket.Texture:SetTexture(GetFactionTrinketIconByRace(data.race))
+                else
+                    frame.Trinket.Texture:SetTexture(sArenaMixin.trinketTexture)
+                end
             end
             frame.Trinket.Texture:SetDesaturated(false)
         end

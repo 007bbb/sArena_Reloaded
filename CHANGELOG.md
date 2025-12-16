@@ -1,3 +1,7 @@
+2.3.1b
+- Fixup TBC stuff.
+- Add a guard for potential DR error, will print error msg, please report back.
+
 2.3.1
 - Add Wrath support
 

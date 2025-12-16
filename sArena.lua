@@ -1301,7 +1301,6 @@ function sArenaMixin:OnEvent(event, ...)
                             sArena_ReloadedDB.collectedSpells = {}
                         end
                         if not sArena_ReloadedDB.collectedSpells[spellID] then
-                            print("added CAST spellID:", spellID)
                             sArena_ReloadedDB.collectedSpells[spellID] = {spellName, sourceClass, "CAST"}
                         end
                     elseif combatEvent == "SPELL_AURA_APPLIED" then
@@ -1309,7 +1308,6 @@ function sArenaMixin:OnEvent(event, ...)
                             sArena_ReloadedDB.collectedAuras = {}
                         end
                         if not sArena_ReloadedDB.collectedAuras[spellID] then
-                            print("added AURA spellID:", spellID, auraType)
                             sArena_ReloadedDB.collectedAuras[spellID] = {spellName, sourceClass, auraType}
                         end
                     end

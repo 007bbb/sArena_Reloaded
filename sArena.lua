@@ -1129,7 +1129,7 @@ function sArenaMixin:OnEvent(event, ...)
 
             -- Old Arena Spec Detection
             if isOldArena then
-                if (sArenaMixin.specSpells[spellID] or sArenaMixin.specBuffs[spellID]) then
+                if (sArenaMixin.specCasts[spellID] or sArenaMixin.specBuffs[spellID]) then
                     for i = 1, sArenaMixin.maxArenaOpponents do
                         if (sourceGUID == UnitGUID("arena" .. i)) then
                             local ArenaFrame = self["arena" .. i]
@@ -1384,7 +1384,7 @@ local function ChatCommand(input)
     end
 end
 
-function sArenaMixin:UpdateCleanups(db)
+function sArenaMixin:DatabaseCleanup(db)
     if not db then return end
     -- Migrate old swapHumanTrinket setting to new swapRacialTrinket
     if db.profile.swapHumanTrinket ~= nil and db.profile.swapRacialTrinket == nil then
@@ -1448,6 +1448,37 @@ function sArenaMixin:UpdateCleanups(db)
             pixelatedDR.thickPixelBorder = true
         end
     end
+
+    -- Fix incorrect Stun DR icon on TBC (was 132298, should be 132092)
+    if isTBC and not db.tbcStunIconFix then
+        local oldIcon = 132298 -- Kidney Shot icon (incorrect)
+        local newIcon = 132092 -- Correct Stun icon
+
+        -- Fix global DR categories
+        if db.profile.drCategories and db.profile.drCategories["Stun"] == oldIcon then
+            db.profile.drCategories["Stun"] = newIcon
+        end
+
+        -- Fix per-spec DR categories
+        if db.profile.drCategoriesSpec then
+            for specID, categories in pairs(db.profile.drCategoriesSpec) do
+                if categories["Stun"] == oldIcon then
+                    categories["Stun"] = newIcon
+                end
+            end
+        end
+
+        -- Fix per-class DR categories
+        if db.profile.drCategoriesClass then
+            for class, categories in pairs(db.profile.drCategoriesClass) do
+                if categories["Stun"] == oldIcon then
+                    categories["Stun"] = newIcon
+                end
+            end
+        end
+
+        db.tbcStunIconFix = true
+    end
 end
 
 function sArenaMixin:UpdatePlayerSpec()
@@ -1494,7 +1525,7 @@ function sArenaMixin:Initialize()
     LibStub("AceConfigDialog-3.0"):SetDefaultSize("sArena", compatIssue and 520 or 860, compatIssue and 300 or 690)
     LibStub("AceConsole-3.0"):RegisterChatCommand("sarena", ChatCommand)
     if not compatIssue then
-        self:UpdateCleanups(db)
+        self:DatabaseCleanup(db)
         if not isMidnight then
             self:UpdateDRTimeSetting()
         end

@@ -3990,7 +3990,7 @@ local specTemplates = {
 
 local testPlayers = {
     { template = "BM_HUNTER", name = "Despytimes" },
-    { template = "BM_HUNTER", name = "Littlejimmy", racial = 132309 },
+    { template = "BM_HUNTER", name = "Littlejimmy", racial = 132309, race = "Gnome" },
     { template = "MM_HUNTER", name = "Jellybeans" },
     { template = "SURV_HUNTER", name = "Bicmex" },
     { template = "ELE_SHAMAN", name = "Bluecheese" },

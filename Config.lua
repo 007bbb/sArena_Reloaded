@@ -4646,8 +4646,8 @@ else
                                     },
                                     shadowSightTimer = {
                                         order = 7.5,
-                                        name = "Enable Shadowsight Timer",
-                                        desc = "Show a timer at the top of the screen for when Shadowsight buffs spawn in the arena",
+                                        name = L["Option_ShadowsightTimer"],
+                                        desc = L["Option_ShadowsightTimer_Desc"],
                                         type = "toggle",
                                         width = "full",
                                         get = function(info) return info.handler.db.profile.shadowSightTimer end,
@@ -4987,10 +4987,8 @@ else
                                     },
                                     colorDRCooldownText = {
                                         order = 3,
-                                        name = "Color DR Cooldown Text by Severity",
-                                        desc = isMidnight and
-                                        "Colors the DR cooldown countdown text based on diminishing return severity.\n\n|cff00ff00Green|r for ½ diminish\n|cffff0000Red|r for immune" or
-                                        "Colors the DR cooldown countdown text based on diminishing return severity.\n\n|cff00ff00Green|r for ½ diminish\n|cffffff00Yellow|r for ¼ diminish\n|cffff0000Red|r for immune",
+                                        name = L["Option_ColorDRCooldownText"],
+                                        desc = isMidnight and L["Option_ColorDRCooldownText_Desc_Midnight"] or L["Option_ColorDRCooldownText_Desc"],
                                         type = "toggle",
                                         width = "full",
                                         get = function(info) return info.handler.db.profile.colorDRCooldownText end,

@@ -2378,7 +2378,7 @@ end
 function sArenaFrameMixin:CreateDRFrames()
     local id = self:GetID()
     for _, category in ipairs(sArenaMixin.drCategories) do
-        local name = "sArenaDRFrame" .. id .. category
+        local name = "sArenaEnemyFrameDR" .. id .. category
         local drFrame = CreateFrame("Frame", name, self, "sArenaDRFrameTemplate")
         self[category] = drFrame
     end

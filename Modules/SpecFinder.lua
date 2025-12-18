@@ -1,5 +1,5 @@
 function sArenaMixin:GetSpecNameFromSpell(spellID)
-    local spec = self.specSpells[spellID] or self.specBuffs[spellID]
+    local spec = self.specCasts[spellID] or self.specBuffs[spellID]
     return spec
 end
 

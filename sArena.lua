@@ -5,6 +5,7 @@ local L = sArenaMixin.L
 
 -- Older clients dont show opponents in spawn
 local isOldArena = sArenaMixin.isTBC or sArenaMixin.isWrath
+local isModernArena = isRetail or isMidnight -- For old trinkets
 
 sArenaMixin.layouts = {}
 sArenaMixin.defaultSettings = {
@@ -301,6 +302,149 @@ function sArenaMixin:CompatibilityEnsurer()
             C_AddOns.DisableAddOn(addonName)
         end
     end
+end
+
+local function TEMPShareCollectedData()
+    if not sArena_ReloadedDB or not sArena_ReloadedDB.collectData then
+        sArenaMixin:Print("Data collection is not enabled. Set db.collectData = true first.")
+        return
+    end
+
+    local hasSpells = sArena_ReloadedDB.collectedSpells and next(sArena_ReloadedDB.collectedSpells) ~= nil
+    local hasAuras = sArena_ReloadedDB.collectedAuras and next(sArena_ReloadedDB.collectedAuras) ~= nil
+
+    if not hasSpells and not hasAuras then
+        sArenaMixin:Print("No spell data has been collected yet.")
+        return
+    end
+
+    if not sArenaMixin.DataExportFrame then
+        local frame = CreateFrame("Frame", "sArenaDataExportFrame", UIParent, "BackdropTemplate")
+        frame:SetSize(600, 500)
+        frame:SetPoint("CENTER")
+        frame:SetFrameStrata("DIALOG")
+        frame:SetBackdrop({
+            bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+            tile = true, tileSize = 32, edgeSize = 32,
+            insets = { left = 11, right = 12, top = 12, bottom = 11 }
+        })
+        frame:SetBackdropColor(0, 0, 0, 1)
+        frame:EnableMouse(true)
+        frame:SetMovable(true)
+        frame:RegisterForDrag("LeftButton")
+        frame:SetScript("OnDragStart", frame.StartMoving)
+        frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
+
+        -- Title
+        local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+        title:SetPoint("TOP", 0, -15)
+        title:SetText("sArena Collected Spell Data")
+
+        -- Close button
+        local closeButton = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
+        closeButton:SetPoint("TOPRIGHT", -5, -5)
+
+        -- ScrollFrame for EditBox
+        local scrollFrame = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
+        scrollFrame:SetPoint("TOPLEFT", 20, -45)
+        scrollFrame:SetPoint("BOTTOMRIGHT", -35, 50)
+
+        -- EditBox
+        local editBox = CreateFrame("EditBox", nil, scrollFrame)
+        editBox:SetMultiLine(true)
+        editBox:SetAutoFocus(false)
+        editBox:SetFontObject("ChatFontNormal")
+        editBox:SetWidth(scrollFrame:GetWidth())
+        editBox:SetScript("OnEscapePressed", function() frame:Hide() end)
+        scrollFrame:SetScrollChild(editBox)
+
+        -- Select All button
+        local selectAllButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+        selectAllButton:SetSize(120, 25)
+        selectAllButton:SetPoint("BOTTOM", 0, 15)
+        selectAllButton:SetText("Select All")
+        selectAllButton:SetScript("OnClick", function()
+            editBox:HighlightText()
+            editBox:SetFocus()
+        end)
+
+        frame.editBox = editBox
+        sArenaMixin.DataExportFrame = frame
+    end
+
+    local output = {}
+    local totalCount = 0
+
+    if hasSpells then
+        table.insert(output, "-- Collected Spell Casts")
+        table.insert(output, "sArenaMixin.collectedSpells = {")
+
+        local sortedSpellIDs = {}
+        for spellID in pairs(sArena_ReloadedDB.collectedSpells) do
+            table.insert(sortedSpellIDs, spellID)
+        end
+        table.sort(sortedSpellIDs)
+
+        for _, spellID in ipairs(sortedSpellIDs) do
+            local data = sArena_ReloadedDB.collectedSpells[spellID]
+            local spellName = data[1] or "Unknown"
+            local sourceClass = data[2] or "Unknown"
+            local type = data[3] or "Unknown"
+
+            -- Escape special characters in spell name
+            spellName = spellName:gsub("\\", "\\\\"):gsub('"', '\\"')
+
+            table.insert(output, string.format('    [%d] = {"%s", "%s", "%s"}, -- %s',
+                spellID, spellName, sourceClass, type, spellName))
+        end
+
+        table.insert(output, "}")
+        table.insert(output, "")
+        totalCount = totalCount + #sortedSpellIDs
+    end
+
+    if hasAuras then
+        table.insert(output, "-- Collected Auras (Buffs/Debuffs)")
+        table.insert(output, "sArenaMixin.collectedAuras = {")
+
+        local sortedAuraIDs = {}
+        for spellID in pairs(sArena_ReloadedDB.collectedAuras) do
+            table.insert(sortedAuraIDs, spellID)
+        end
+        table.sort(sortedAuraIDs)
+
+        for _, spellID in ipairs(sortedAuraIDs) do
+            local data = sArena_ReloadedDB.collectedAuras[spellID]
+            local spellName = data[1] or "Unknown"
+            local sourceClass = data[2] or "Unknown"
+            local auraType = data[3] or "Unknown"
+
+            -- Escape special characters in spell name
+            spellName = spellName:gsub("\\", "\\\\"):gsub('"', '\\"')
+
+            table.insert(output, string.format('    [%d] = {"%s", "%s", "%s"}, -- %s',
+                spellID, spellName, sourceClass, auraType, spellName))
+        end
+
+        table.insert(output, "}")
+        totalCount = totalCount + #sortedAuraIDs
+    end
+
+    -- Join all lines
+    local formattedData = table.concat(output, "\n")
+
+    -- Set the text and show the frame
+    sArenaMixin.DataExportFrame.editBox:SetText(formattedData)
+    sArenaMixin.DataExportFrame:Show()
+
+    -- Automatically select all text
+    C_Timer.After(0.1, function()
+        sArenaMixin.DataExportFrame.editBox:HighlightText()
+        sArenaMixin.DataExportFrame.editBox:SetFocus()
+    end)
+
+    sArenaMixin:Print("Collected %d total entries. Data displayed in export window.", totalCount)
 end
 
 local db
@@ -1049,6 +1193,23 @@ local function EnsureArenaFramesEnabled()
     end
 end
 
+local function GetFactionTrinketIconByRace(race)
+    local allianceRaces = {
+        ["Human"] = true,
+        ["Dwarf"] = true,
+        ["NightElf"] = true,
+        ["Gnome"] = true,
+        ["Draenei"] = true,
+        ["Worgen"] = true,
+    }
+
+    if allianceRaces[race] then
+        return 133452  -- Alliance trinket
+    else
+        return 133453  -- Horde trinket
+    end
+end
+
 function sArenaMixin:ShowMidnightDRWarning()
     if self.midnightWarningFrame then
         self.midnightWarningFrame:Show()
@@ -1130,7 +1291,31 @@ function sArenaMixin:OnEvent(event, ...)
 
             -- Old Arena Spec Detection
             if isOldArena then
-                if (sArenaMixin.specSpells[spellID] or sArenaMixin.specBuffs[spellID]) then
+
+                -- TEMP DATACOLLECT
+                if sArena_ReloadedDB.collectData then
+                    local spellName = C_Spell.GetSpellName(spellID)
+                    local _, sourceClass = GetPlayerInfoByGUID(sourceGUID)
+
+                    if combatEvent == "SPELL_CAST_SUCCESS" then
+                        if not sArena_ReloadedDB.collectedSpells then
+                            sArena_ReloadedDB.collectedSpells = {}
+                        end
+                        if not sArena_ReloadedDB.collectedSpells[spellID] then
+                            sArena_ReloadedDB.collectedSpells[spellID] = {spellName, sourceClass, "CAST"}
+                        end
+                    elseif combatEvent == "SPELL_AURA_APPLIED" then
+                        if not sArena_ReloadedDB.collectedAuras then
+                            sArena_ReloadedDB.collectedAuras = {}
+                        end
+                        if not sArena_ReloadedDB.collectedAuras[spellID] then
+                            sArena_ReloadedDB.collectedAuras[spellID] = {spellName, sourceClass, auraType}
+                        end
+                    end
+                end
+                -- TEMP DATACOLLECT
+
+                if (sArenaMixin.specCasts[spellID] or sArenaMixin.specBuffs[spellID]) then
                     for i = 1, sArenaMixin.maxArenaOpponents do
                         if (sourceGUID == UnitGUID("arena" .. i)) then
                             local ArenaFrame = self["arena" .. i]
@@ -1385,7 +1570,7 @@ local function ChatCommand(input)
     end
 end
 
-function sArenaMixin:UpdateCleanups(db)
+function sArenaMixin:DatabaseCleanup(db)
     if not db then return end
     -- Migrate old swapHumanTrinket setting to new swapRacialTrinket
     if db.profile.swapHumanTrinket ~= nil and db.profile.swapRacialTrinket == nil then
@@ -1449,6 +1634,37 @@ function sArenaMixin:UpdateCleanups(db)
             pixelatedDR.thickPixelBorder = true
         end
     end
+
+    -- Fix incorrect Stun DR icon on TBC (was 132298, should be 132092)
+    if isTBC and not db.tbcStunIconFix then
+        local oldIcon = 132298 -- Kidney Shot icon (incorrect)
+        local newIcon = 132092 -- Correct Stun icon
+
+        -- Fix global DR categories
+        if db.profile.drCategories and db.profile.drCategories["Stun"] == oldIcon then
+            db.profile.drCategories["Stun"] = newIcon
+        end
+
+        -- Fix per-spec DR categories
+        if db.profile.drCategoriesSpec then
+            for specID, categories in pairs(db.profile.drCategoriesSpec) do
+                if categories["Stun"] == oldIcon then
+                    categories["Stun"] = newIcon
+                end
+            end
+        end
+
+        -- Fix per-class DR categories
+        if db.profile.drCategoriesClass then
+            for class, categories in pairs(db.profile.drCategoriesClass) do
+                if categories["Stun"] == oldIcon then
+                    categories["Stun"] = newIcon
+                end
+            end
+        end
+
+        db.tbcStunIconFix = true
+    end
 end
 
 function sArenaMixin:UpdatePlayerSpec()
@@ -1494,8 +1710,9 @@ function sArenaMixin:Initialize()
     LibStub("AceConfig-3.0"):RegisterOptionsTable("sArena", self.optionsTable)
     LibStub("AceConfigDialog-3.0"):SetDefaultSize("sArena", compatIssue and 520 or 860, compatIssue and 300 or 690)
     LibStub("AceConsole-3.0"):RegisterChatCommand("sarena", ChatCommand)
+    LibStub("AceConsole-3.0"):RegisterChatCommand("sarenasend", TEMPShareCollectedData)
     if not compatIssue then
-        self:UpdateCleanups(db)
+        self:DatabaseCleanup(db)
         if not isMidnight then
             self:UpdateDRTimeSetting()
         end
@@ -3597,7 +3814,7 @@ local specTemplates = {
         specIcon = isOldArena and 132164 or 461112,
         castName = "Cobra Shot",
         castIcon = isOldArena and 132211 or 461114,
-        racial = 132089,
+        racial = 135726,
         race = "Orc",
         specName = "Beast Mastery",
         unint = true,
@@ -3627,7 +3844,7 @@ local specTemplates = {
         specIcon = 136048,
         castName = "Lightning Bolt",
         castIcon = 136048,
-        racial = 135923,
+        racial = 135726,
         race = "Orc",
         specName = "Elemental",
     },
@@ -3636,7 +3853,7 @@ local specTemplates = {
         specIcon = isOldArena and 136051 or 237581,
         castName = "Stormstrike",
         castIcon = 132314,
-        racial = 135923,
+        racial = 135726,
         race = "Orc",
         specName = "Enhancement",
     },
@@ -3646,7 +3863,7 @@ local specTemplates = {
         castName = "Healing Wave",
         castIcon = 136052,
         racial = 135726,
-        race = "Troll",
+        race = "Orc",
         specName = "Restoration",
     },
     RESTO_DRUID = {
@@ -3663,8 +3880,8 @@ local specTemplates = {
         specIcon = 136145,
         castName = "Fear",
         castIcon = 136183,
-        racial = 135726,
-        race = "Scourge",
+        racial = 132089,
+        race = "NightElf",
         specName = "Affliction",
     },
     DESTRO_WARLOCK = {
@@ -3672,8 +3889,8 @@ local specTemplates = {
         specIcon = 136145,
         castName = "Chaos Bolt",
         castIcon = 136186,
-        racial = 135726,
-        race = "Scourge",
+        racial = 132089,
+        race = "NightElf",
         specName = "Destruction",
     },
     ARMS_WARRIOR = {
@@ -3681,7 +3898,7 @@ local specTemplates = {
         specIcon = 132355,
         castName = "Slam",
         castIcon = 132340,
-        racial = 132309,
+        racial = 136129,
         race = "Human",
         specName = "Arms",
         unint = true,
@@ -3691,7 +3908,7 @@ local specTemplates = {
         specIcon = 135940,
         castName = "Penance",
         castIcon = 237545,
-        racial = 136187,
+        racial = 136129,
         race = "Human",
         specName = "Discipline",
         channel = true,
@@ -3701,7 +3918,7 @@ local specTemplates = {
         specIcon = 237542,
         castName = "Holy Fire",
         castIcon = 135972,
-        racial = 136187,
+        racial = 136129,
         race = "Human",
         specName = "Holy",
     },
@@ -3737,8 +3954,8 @@ local specTemplates = {
         specIcon = 135810,
         castName = "Pyroblast",
         castIcon = 135808,
-        racial = 135991,
-        race = "Gnome",
+        racial = 132089,
+        race = "NightElf",
         specName = "Fire",
     },
     RET_PALADIN = {
@@ -3754,7 +3971,7 @@ local specTemplates = {
         class = "DEATHKNIGHT",
         specIcon = isTBC and 136212 or 135775,
         racial = 135726,
-        race = "Scourge",
+        race = "Orc",
         specName = "Unholy",
         castName = "Army of the Dead",
         castIcon = isTBC and 136212 or 237511,
@@ -3765,7 +3982,7 @@ local specTemplates = {
         specIcon = 132320,
         castName = "Crippling Poison",
         castIcon = 132273,
-        racial = 132089,
+        racial = 135726,
         race = "Orc",
         specName = "Subtlety",
         unint = true,
@@ -4083,7 +4300,11 @@ function sArenaMixin:Test()
             elseif shouldForceHumanTrinket then
                 frame.Trinket.Texture:SetTexture(133452)
             else
-                frame.Trinket.Texture:SetTexture(sArenaMixin.trinketTexture)
+                if not isModernArena then
+                    frame.Trinket.Texture:SetTexture(GetFactionTrinketIconByRace(data.race))
+                else
+                    frame.Trinket.Texture:SetTexture(sArenaMixin.trinketTexture)
+                end
             end
             frame.Trinket.Texture:SetDesaturated(false)
         end

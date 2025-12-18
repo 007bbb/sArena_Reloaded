@@ -429,6 +429,16 @@ L["Option_StreamerProfiles_Desc"] = "Import pre-configured profiles from popular
 L["Unknown"] = "Unknown"
 L["Unknown_Spell"] = "Unknown Spell"
 L["Cooldown_Seconds"] = "Cooldown: %d seconds"
+L["SelectAll"] = "Select All"
+
+---------------------------------------
+-- Data Collection
+---------------------------------------
+
+L["DataCollection_NotEnabled"] = "Data collection is not enabled. Set db.collectData = true first."
+L["DataCollection_NoDataYet"] = "No spell data has been collected yet."
+L["DataCollection_ExportTitle"] = "sArena Collected Spell Data"
+L["DataCollection_ExportComplete"] = "Collected %d total entries. Data displayed in export window."
 
 L["Print_CurrentVersion"] = "Current Version: %s"
 L["Print_MultipleVersionsLoaded"] = "Two different versions of sArena are loaded. Please select how you want to continue by typing /sarena"

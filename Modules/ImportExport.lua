@@ -109,7 +109,7 @@ function sArenaMixin:ImportProfile(encodedString, customProfileName)
     local serialized, decompressErr = LibDeflate:DecompressDeflate(compressed)
 
     if not serialized then
-        return nil, string.format(L["Message_DecompressionError"], decompressErr or "unknown")
+        return nil, string.format(L["Message_DecompressionError"], decompressErr or L["Unknown"])
     end
 
     local success, importTable = LibSerialize:Deserialize(serialized)

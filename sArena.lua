@@ -306,7 +306,7 @@ end
 
 local function TEMPShareCollectedData()
     if not sArena_ReloadedDB or not sArena_ReloadedDB.collectData then
-        sArenaMixin:Print("Data collection is not enabled. Set db.collectData = true first.")
+        sArenaMixin:Print(L["DataCollection_NotEnabled"])
         return
     end
 
@@ -314,7 +314,7 @@ local function TEMPShareCollectedData()
     local hasAuras = sArena_ReloadedDB.collectedAuras and next(sArena_ReloadedDB.collectedAuras) ~= nil
 
     if not hasSpells and not hasAuras then
-        sArenaMixin:Print("No spell data has been collected yet.")
+        sArenaMixin:Print(L["DataCollection_NoDataYet"])
         return
     end
 
@@ -339,7 +339,7 @@ local function TEMPShareCollectedData()
         -- Title
         local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
         title:SetPoint("TOP", 0, -15)
-        title:SetText("sArena Collected Spell Data")
+        title:SetText(L["DataCollection_ExportTitle"])
 
         -- Close button
         local closeButton = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
@@ -363,7 +363,7 @@ local function TEMPShareCollectedData()
         local selectAllButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
         selectAllButton:SetSize(120, 25)
         selectAllButton:SetPoint("BOTTOM", 0, 15)
-        selectAllButton:SetText("Select All")
+        selectAllButton:SetText(L["SelectAll"])
         selectAllButton:SetScript("OnClick", function()
             editBox:HighlightText()
             editBox:SetFocus()
@@ -388,9 +388,9 @@ local function TEMPShareCollectedData()
 
         for _, spellID in ipairs(sortedSpellIDs) do
             local data = sArena_ReloadedDB.collectedSpells[spellID]
-            local spellName = data[1] or "Unknown"
-            local sourceClass = data[2] or "Unknown"
-            local type = data[3] or "Unknown"
+            local spellName = data[1] or L["Unknown"]
+            local sourceClass = data[2] or L["Unknown"]
+            local type = data[3] or L["Unknown"]
 
             -- Escape special characters in spell name
             spellName = spellName:gsub("\\", "\\\\"):gsub('"', '\\"')
@@ -416,9 +416,9 @@ local function TEMPShareCollectedData()
 
         for _, spellID in ipairs(sortedAuraIDs) do
             local data = sArena_ReloadedDB.collectedAuras[spellID]
-            local spellName = data[1] or "Unknown"
-            local sourceClass = data[2] or "Unknown"
-            local auraType = data[3] or "Unknown"
+            local spellName = data[1] or L["Unknown"]
+            local sourceClass = data[2] or L["Unknown"]
+            local auraType = data[3] or L["Unknown"]
 
             -- Escape special characters in spell name
             spellName = spellName:gsub("\\", "\\\\"):gsub('"', '\\"')
@@ -444,7 +444,7 @@ local function TEMPShareCollectedData()
         sArenaMixin.DataExportFrame.editBox:SetFocus()
     end)
 
-    sArenaMixin:Print("Collected %d total entries. Data displayed in export window.", totalCount)
+    sArenaMixin:Print(L["DataCollection_ExportComplete"], totalCount)
 end
 
 local db

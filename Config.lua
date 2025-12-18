@@ -4002,9 +4002,9 @@ local function setDRIcons()
             name = function(info)
                 local db = info.handler.db
                 if db.profile.drStaticIconsPerSpec then
-                    local className = select(1, UnitClass("player")) or "Unknown"
+                    local className = select(1, UnitClass("player")) or L["Unknown"]
                     local classKey = select(2, UnitClass("player"))
-                    local specName = sArenaMixin.playerSpecName or "Unknown"
+                    local specName = sArenaMixin.playerSpecName or L["Unknown"]
                     local classColor = RAID_CLASS_COLORS[classKey]
                     local coloredText = specName .. " " .. className
                     if classColor then
@@ -5047,9 +5047,9 @@ else
                                         name = function(info)
                                             local db = info.handler.db
                                             if db.profile.drCategoriesPerSpec then
-                                                local className = select(1, UnitClass("player")) or "Unknown"
+                                                local className = select(1, UnitClass("player")) or L["Unknown"]
                                                 local classKey = select(2, UnitClass("player"))
-                                                local specName = sArenaMixin.playerSpecName or "Unknown"
+                                                local specName = sArenaMixin.playerSpecName or L["Unknown"]
                                                 local classColor = RAID_CLASS_COLORS[classKey]
                                                 local coloredText = specName .. " " .. className
                                                 if classColor then

@@ -4866,17 +4866,13 @@ else
                                     removeUnequippedTrinketTexture = {
                                         order = 2,
                                         name = "Remove Un-Equipped Trinket Texture",
-                                        desc = "Enable this setting to hide the Trinket entirely when the enemy does have a one equipped, instead of showing the default White Flag indicating no Trinket.",
+                                        desc = "Hide the white flag texture in the trinket spot (signifying no trinket is equipped). No texture at all will be shown instead.",
                                         type = "toggle",
                                         width = "full",
                                         get = function(info) return info.handler.db.profile.removeUnequippedTrinketTexture end,
                                         set = function(info, val)
                                             info.handler.db.profile.removeUnequippedTrinketTexture = val
-                                            if val then
-                                                sArenaMixin.noTrinketTexture = nil
-                                            else
-                                                sArenaMixin.noTrinketTexture = 638661
-                                            end
+                                            info.handler:UpdateNoTrinketTexture()
                                         end
                                     },
                                     desaturateTrinketCD = {

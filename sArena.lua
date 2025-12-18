@@ -42,7 +42,7 @@ sArenaMixin.defaultSettings = {
 
 sArenaMixin.playerClass = select(2, UnitClass("player"))
 sArenaMixin.maxArenaOpponents = (isRetail and 3) or 5
-sArenaMixin.noTrinketTexture = 638661
+sArenaMixin.noTrinketTexture = (isTBC and 132311) or 638661 --temp texture for tbc. todo: export retail and include in sarena
 sArenaMixin.trinketTexture = (isRetail and 1322720) or 133453
 sArenaMixin.trinketID = (isRetail and 336126) or 42292
 sArenaMixin.showPixelBorder = false
@@ -1689,7 +1689,7 @@ function sArenaMixin:UpdateNoTrinketTexture()
     if self.db.profile.removeUnequippedTrinketTexture then
         sArenaMixin.noTrinketTexture = nil
     else
-        sArenaMixin.noTrinketTexture = 638661
+        sArenaMixin.noTrinketTexture = "Interface\\AddOns\\sArena_Reloaded\\Textures\\inv_pet_exitbattle.tga"
     end
 end
 

@@ -4875,11 +4875,7 @@ else
                                         get = function(info) return info.handler.db.profile.removeUnequippedTrinketTexture end,
                                         set = function(info, val)
                                             info.handler.db.profile.removeUnequippedTrinketTexture = val
-                                            if val then
-                                                sArenaMixin.noTrinketTexture = nil
-                                            else
-                                                sArenaMixin.noTrinketTexture = 638661
-                                            end
+                                            info.handler:UpdateNoTrinketTexture()
                                         end
                                     },
                                     desaturateTrinketCD = {
